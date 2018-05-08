@@ -1,0 +1,36 @@
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "private": true,
+  "scripts": {
+    "test": "node_modules/.bin/jest",
+    "test:watch": "node_modules/.bin/jest --watch"
+  },
+  "jest": {
+    "preset": "jest-expo"
+  },
+  "eslintConfig": {
+    "extends": "universe/native"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "base-64": "^0.1.0",
+    "expo": "^25.0.0",
+    "lodash": "^4.17.5",
+    "react": "16.2.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz",
+    "react-native-elements": "^0.19.1",
+    "react-navigation": "^1.5.1",
+    "react-redux": "^5.0.7",
+    "redux": "^3.7.2",
+    "redux-promise": "^0.5.3",
+    "redux-thunk": "^2.2.0",
+    "utf8": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.0",
+    "eslint-config-universe": "^1.0.7",
+    "jest-expo": "^25.1.0",
+    "prettier": "^1.11.1",
+    "react-test-renderer": "^16.2.0"
+  }
+}

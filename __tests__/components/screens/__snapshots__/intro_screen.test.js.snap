@@ -1,0 +1,304 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`IntroScreen component renders component after getting token correctly 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <RCTScrollView
+    horizontal={true}
+    pagingEnabled={true}
+  >
+    <View>
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "#ededed",
+            "flex": 1,
+            "justifyContent": "center",
+            "width": 750,
+          }
+        }
+      >
+        <Text
+          accessible={true}
+          allowFontScaling={true}
+          ellipsizeMode="tail"
+          style={
+            Object {
+              "color": "#2a2a2a",
+              "fontSize": 30,
+              "textAlign": "center",
+            }
+          }
+        >
+          Welcome to Kentico Pages!
+        </Text>
+      </View>
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "#ededed",
+            "flex": 1,
+            "justifyContent": "center",
+            "width": 750,
+          }
+        }
+      >
+        <Text
+          accessible={true}
+          allowFontScaling={true}
+          ellipsizeMode="tail"
+          style={
+            Object {
+              "color": "#2a2a2a",
+              "fontSize": 30,
+              "textAlign": "center",
+            }
+          }
+        >
+          Use this to edit your site content
+        </Text>
+      </View>
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "#ededed",
+            "flex": 1,
+            "justifyContent": "center",
+            "width": 750,
+          }
+        }
+      >
+        <Text
+          accessible={true}
+          allowFontScaling={true}
+          ellipsizeMode="tail"
+          style={
+            Object {
+              "color": "#2a2a2a",
+              "fontSize": 30,
+              "textAlign": "center",
+            }
+          }
+        >
+          Swipe from the left to access specific page and start customizing
+        </Text>
+      </View>
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "#ededed",
+            "flex": 1,
+            "justifyContent": "center",
+            "width": 750,
+          }
+        }
+      >
+        <Text
+          accessible={true}
+          allowFontScaling={true}
+          ellipsizeMode="tail"
+          style={
+            Object {
+              "color": "#2a2a2a",
+              "fontSize": 30,
+              "textAlign": "center",
+            }
+          }
+        >
+          But first enter your Kentico configuration to access your server!
+        </Text>
+        <View
+          style={
+            Array [
+              Object {
+                "marginLeft": 15,
+                "marginRight": 15,
+              },
+              Object {
+                "shadowColor": "rgba(0,0,0, .4)",
+                "shadowOffset": Object {
+                  "height": 1,
+                  "width": 1,
+                },
+                "shadowOpacity": 1,
+                "shadowRadius": 1,
+              },
+              Object {
+                "backgroundColor": "#497d04",
+                "marginTop": 15,
+              },
+              undefined,
+            ]
+          }
+        >
+          <View
+            accessibilityComponentType={undefined}
+            accessibilityLabel={undefined}
+            accessibilityTraits={undefined}
+            accessible={true}
+            hasTVPreferredFocus={undefined}
+            hitSlop={undefined}
+            isTVSelectable={true}
+            nativeID={undefined}
+            onLayout={undefined}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={null}
+            testID={undefined}
+            tvParallaxProperties={undefined}
+          >
+            <View
+              pointerEvents="box-only"
+              style={
+                Array [
+                  Object {
+                    "alignItems": "center",
+                    "backgroundColor": "#9E9E9E",
+                    "flexDirection": "row",
+                    "justifyContent": "center",
+                    "padding": 19,
+                  },
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  Object {
+                    "padding": 12,
+                  },
+                  undefined,
+                  undefined,
+                  undefined,
+                  Object {
+                    "backgroundColor": "#497d04",
+                    "shadowColor": "#355e00",
+                    "shadowOffset": Object {
+                      "height": -3,
+                      "width": 0,
+                    },
+                  },
+                  undefined,
+                  undefined,
+                ]
+              }
+            >
+              <Text
+                accessible={true}
+                allowFontScaling={true}
+                ellipsizeMode="tail"
+                style={
+                  Array [
+                    Object {},
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    Array [
+                      Object {
+                        "color": "white",
+                        "fontSize": 20,
+                      },
+                      undefined,
+                      Object {
+                        "fontSize": 17.5,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                    ],
+                  ]
+                }
+              >
+                Onwards!
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  </RCTScrollView>
+</View>
+`;
+
+exports[`IntroScreen component renders component before getting token correctly 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": "#ededed",
+      "flex": 1,
+      "justifyContent": "center",
+      "width": 750,
+    }
+  }
+>
+  <View>
+    <Text
+      accessible={true}
+      allowFontScaling={true}
+      ellipsizeMode="tail"
+      style={
+        Object {
+          "color": "#2a2a2a",
+          "fontSize": 45,
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    >
+      Kentico
+    </Text>
+    <Text
+      accessible={true}
+      allowFontScaling={true}
+      ellipsizeMode="tail"
+      style={
+        Object {
+          "color": "#2a2a2a",
+          "fontSize": 40,
+          "marginBottom": 50,
+          "marginTop": 10,
+          "textAlign": "center",
+        }
+      }
+    >
+      Pages
+    </Text>
+  </View>
+  <ActivityIndicator
+    animating={true}
+    color="#999999"
+    hidesWhenStopped={true}
+    size="large"
+    style={
+      Object {
+        "alignItems": "center",
+        "justifyContent": "center",
+        "paddingTop": 150,
+      }
+    }
+  />
+</View>
+`;
