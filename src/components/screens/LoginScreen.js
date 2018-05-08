@@ -16,7 +16,7 @@ class LoginScreen extends Component {
     }
   }
 
-  _onLogin = async () => {
+  _onLogin = () => {
     this.props.setError('');
     if (!this.state.login) {
       this.props.setError('Login field cannot be empty!');

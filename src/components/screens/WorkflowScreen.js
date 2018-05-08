@@ -4,6 +4,7 @@ import { Button } from 'react-native-elements';
 import { connect } from 'react-redux';
 
 import { Card, CardSection, Input } from '../common';
+import { rejectPage, approvePage, toggleLoading } from '../../actions';
 
 class WorkflowScreen extends Component {
   state = { comment: '', selectedStep: null };
@@ -14,11 +15,13 @@ class WorkflowScreen extends Component {
     this.setState({ selectedStep: this.isApproveScreen ? NextWorkflowSteps[0] : PreviousWorkflowSteps[0] });
   }
 
-  _onSendAction = () => {
+  _onSendAction = async () => {
     if (this.isApproveScreen) {
-      console.log('APPROVED!');
+      this.props.toggleLoading();
+      await this.props.approvePage(this.state.selectedStep.WorkflowStepID, this.state.comment, this.props.navigation.navigate);
     } else {
-      console.log('REJECTED!')
+      this.props.toggleLoading();
+      await this.props.rejectPage(this.state.selectedStep.WorkflowStepID, this.state.comment, this.props.navigation.navigate);
     }
   }
 
@@ -49,7 +52,7 @@ class WorkflowScreen extends Component {
           <CardSection>
             <Input 
               label={'Comment:'}
-              placeholder={'Workflow comment...'}
+              placeholder={'Comment...'}
               value={this.state.comment}
               onChangeText={text => this.setState({ comment: text })}
               containerCustomStyle={{ height: '100%', width: '60%' }}
@@ -93,6 +96,6 @@ const mapStateToProps = ({ pages }) => {
   return { page: pages.selectedPage };
 };
 
-const connectedComponent = connect(mapStateToProps)(WorkflowScreen);
+const connectedComponent = connect(mapStateToProps, { rejectPage, approvePage, toggleLoading })(WorkflowScreen);
 
 export { connectedComponent as WorkflowScreen };

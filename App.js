@@ -22,8 +22,8 @@ export default class App extends React.Component {
         content: TabNavigator(
           { 
             preview: { screen: PreviewScreen },
-            approve: { screen: () => <WorkflowScreen isApprove={true} />},
-            reject: { screen: () => <WorkflowScreen isApprove={false} />},
+            approve: { screen: (props) => <WorkflowScreen isApprove={true} {...props} />},
+            reject: { screen: (props) => <WorkflowScreen isApprove={false} {...props} />},
           },
           {
             lazy: true,

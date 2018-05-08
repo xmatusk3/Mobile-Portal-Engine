@@ -43,7 +43,7 @@ export const connectToServer = (address, navigate) => async dispatch => {
 
   try {
     const res = await axios.get(`${address}/SiteAPI`);
-    dispatch(selectSite(res.data.Sites[0]));
+    dispatch(selectSite(res.data.Sites[2]));
     dispatch(setSites(_.keyBy(res.data.Sites, object => object.SiteID)));
     navigate('setSite');
   } catch (e) {

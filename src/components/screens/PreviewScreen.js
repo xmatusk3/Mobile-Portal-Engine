@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { WebView, View, Platform, StatusBar } from 'react-native';
+import { WebView, View, Platform, StatusBar, Text } from 'react-native';
 import { connect } from 'react-redux';
 import { Button } from 'react-native-elements';
 import { LoadingScreen } from '.';
@@ -21,7 +21,7 @@ class PreviewScreen extends Component {
         {this.props.page.PreviousWorkflowSteps.length !== 0 && 
         <View style={{ flex: 1 }}>
           <Button title='Reject' 
-            buttonStyle={{ ...styles.buttonStyle, backgroundColor: '#dc3545', flex: 1 }} 
+            buttonStyle={{ backgroundColor: '#dc3545', flex: 1 }} 
             onPress={this._onReject}
             containerViewStyle={{ width: '100%', marginLeft: 0, flex: 1 }} 
           />
@@ -29,7 +29,7 @@ class PreviewScreen extends Component {
         {this.props.page.NextWorkflowSteps.length !== 0 &&
         <View style={{ flex: 1 }}>
           <Button title='Approve' 
-            buttonStyle={{ ...styles.buttonStyle, backgroundColor: '#497d04', flex: 1 }}
+            buttonStyle={{ backgroundColor: '#497d04', flex: 1 }}
             onPress={this._onApprove} 
             containerViewStyle={{ width: '100%', marginLeft: 0, flex: 1 }}
           />
@@ -38,10 +38,22 @@ class PreviewScreen extends Component {
     );
   }
 
+  _renderWorkflowStepName = () => {
+    if (this.props.page.DocumentChildrenIDs !== undefined) {
+      return null;
+    }
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0}}>
+        <Text>Current workflow step: {this.props.page.CurrentWorkflowStep.WorkflowStepDisplayName}</Text>
+      </View>
+    );
+  }
+
   render() {
     return (
       <View style={{flex: 1}}>
-        <View style={{flex: 11, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
+        {this._renderWorkflowStepName()}
+        <View style={{flex: 10, paddingTop: Platform.OS === 'android' && this.props.page.DocumentChildrenIDs !== undefined ? StatusBar.currentHeight : 0 }}>
           <WebView
             style={{ flex: 1 }}
             source={{ uri: this.props.page.AbsoluteURL }}
@@ -55,10 +67,6 @@ class PreviewScreen extends Component {
 }
 
 const styles = {
-  buttonStyle: {
-    // shadowColor: '#355e00',
-    // shadowOffset: { height: -3, width: 0 },
-  },
   buttonContainer: {
     flex: 1,
     flexDirection: 'row',
