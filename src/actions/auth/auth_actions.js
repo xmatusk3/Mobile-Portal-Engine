@@ -37,8 +37,9 @@ export const connectToServer = (address, navigate) => async dispatch => {
     address = `https://${address}`;
   }
 
-  address += '/customkenticopagesapi';
-
+  if (!address.endsWith('/customkenticopagesapi')) {
+    address += '/customkenticopagesapi';
+  }
   dispatch(setServerAddress(address));
 
   try {

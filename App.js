@@ -10,7 +10,7 @@ import {
   PreviewScreen,
   ConnectScreen,
   SetSiteScreen,
-  WorkflowScreen
+  WorkflowScreen,
 } from './src/components/screens';
 import { CustomDrawerComponent } from './src/components/navigator/pages_navigator';
 import store from './src/store';
@@ -20,10 +20,10 @@ export default class App extends React.Component {
     DrawerNavigator(
       {
         content: TabNavigator(
-          { 
+          {
             preview: { screen: PreviewScreen },
-            approve: { screen: (props) => <WorkflowScreen isApprove={true} {...props} />},
-            reject: { screen: (props) => <WorkflowScreen isApprove={false} {...props} />},
+            approve: { screen: props => <WorkflowScreen isApprove={true} {...props} /> },
+            reject: { screen: props => <WorkflowScreen isApprove={false} {...props} /> },
           },
           {
             lazy: true,

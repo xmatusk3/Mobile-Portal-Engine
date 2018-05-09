@@ -5,37 +5,54 @@ import { connect } from 'react-redux';
 
 import { Card, CardSection, Input } from '../common';
 import { rejectPage, approvePage, toggleLoading } from '../../actions';
+import { LoadingScreen } from '.';
 
 class WorkflowScreen extends Component {
   state = { comment: '', selectedStep: null };
   isApproveScreen = this.props.isApprove;
 
-  componentWillMount() { 
+  componentWillMount() {
     const { NextWorkflowSteps, PreviousWorkflowSteps } = this.props.page;
-    this.setState({ selectedStep: this.isApproveScreen ? NextWorkflowSteps[0] : PreviousWorkflowSteps[0] });
+    this.setState({
+      selectedStep: this.isApproveScreen ? NextWorkflowSteps[0] : PreviousWorkflowSteps[0],
+    });
   }
 
-  _onSendAction = async () => {
+  _onSendAction = () => {
     if (this.isApproveScreen) {
       this.props.toggleLoading();
-      await this.props.approvePage(this.state.selectedStep.WorkflowStepID, this.state.comment, this.props.navigation.navigate);
+      this.props.approvePage(
+        this.state.selectedStep.WorkflowStepID,
+        this.state.comment,
+        this.props.navigation.navigate
+      );
     } else {
       this.props.toggleLoading();
-      await this.props.rejectPage(this.state.selectedStep.WorkflowStepID, this.state.comment, this.props.navigation.navigate);
+      this.props.rejectPage(
+        this.state.selectedStep.WorkflowStepID,
+        this.state.comment,
+        this.props.navigation.navigate
+      );
     }
-  }
+  };
 
   _getPickerItems = () => {
     const { NextWorkflowSteps, PreviousWorkflowSteps } = this.props.page;
     const workflowSteps = this.isApproveScreen ? NextWorkflowSteps : PreviousWorkflowSteps;
-    
+
     return workflowSteps.map(step => (
       <Picker.Item key={step.WorkflowStepID} label={step.WorkflowStepDisplayName} value={step} />
-    )); 
+    ));
   };
 
   render() {
-    const buttonStyle = this.isApproveScreen ? { backgroundColor: '#497d04' } : { backgroundColor: '#dc3545' };
+    if (this.props.loading) {
+      return <LoadingScreen />;
+    }
+
+    const buttonStyle = this.isApproveScreen
+      ? { backgroundColor: '#497d04' }
+      : { backgroundColor: '#dc3545' };
     return (
       <View style={styles.containerStyle}>
         <Card>
@@ -50,7 +67,7 @@ class WorkflowScreen extends Component {
           </CardSection>
 
           <CardSection>
-            <Input 
+            <Input
               label={'Comment:'}
               placeholder={'Comment...'}
               value={this.state.comment}
@@ -60,20 +77,22 @@ class WorkflowScreen extends Component {
             />
           </CardSection>
 
+          <Text style={styles.errorTextStyle}>{this.props.error}</Text>
+
           <CardSection style={styles.buttonCardSection}>
-            <Button 
-              title={this.isApproveScreen ? "Approve" : "Reject"} 
+            <Button
+              title={this.isApproveScreen ? 'Approve' : 'Reject'}
               buttonStyle={buttonStyle}
               containerViewStyle={styles.buttonContainer}
-              onPress={this._onSendAction} 
-              raised 
+              onPress={this._onSendAction}
+              raised
             />
           </CardSection>
         </Card>
       </View>
     );
   }
-};
+}
 
 const styles = {
   containerStyle: {
@@ -88,14 +107,21 @@ const styles = {
   },
   buttonContainer: {
     width: '100%',
-    marginLeft: 0
+    marginLeft: 0,
   },
-}
-
-const mapStateToProps = ({ pages }) => {
-  return { page: pages.selectedPage };
+  errorTextStyle: {
+    fontSize: 20,
+    alignSelf: 'center',
+    color: 'red',
+  },
 };
 
-const connectedComponent = connect(mapStateToProps, { rejectPage, approvePage, toggleLoading })(WorkflowScreen);
+const mapStateToProps = ({ pages, global }) => {
+  return { page: pages.selectedPage, loading: global.loading, error: global.error };
+};
+
+const connectedComponent = connect(mapStateToProps, { rejectPage, approvePage, toggleLoading })(
+  WorkflowScreen
+);
 
 export { connectedComponent as WorkflowScreen };
