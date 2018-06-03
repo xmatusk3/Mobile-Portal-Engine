@@ -32,7 +32,6 @@ export const updateWorkflowPage = page => ({
 
 export const approvePage = (nextStepId, comment, navigate) => async (dispatch, getState) => {
   try {
-    console.log('entering');
     const address = getState().auth.address;
     const page = getState().pages.selectedPage;
     const token = await AsyncStorage.getItem('jwt-token');
@@ -47,20 +46,15 @@ export const approvePage = (nextStepId, comment, navigate) => async (dispatch, g
       Comment: comment,
     };
 
-    console.log('about to approve');
-    console.log('address:', `${address}/ApproveStepAPI`);
-    console.log('body:', body);
-    console.log('headers:', headers);
     let { data } = await axios.post(`${address}/ApproveStepAPI`, querystring.stringify(body), {
       headers,
     });
 
-    console.log('approved, updated page:', data);
     dispatch(updateWorkflowPage(data.UpdatedPage));
     navigate('preview');
     dispatch(toggleLoading());
   } catch (e) {
-    console.log(e);
+    console.error(e);
     dispatch({
       type: GLOBAL_SET_ERROR,
       payload: 'Failed approving the page. Try restarting the application.',
@@ -88,12 +82,11 @@ export const rejectPage = (prevStepId, comment, navigate) => async (dispatch, ge
       headers,
     });
 
-    console.log(data);
     dispatch(updateWorkflowPage(data.UpdatedPage));
     navigate('preview');
     dispatch(toggleLoading());
   } catch (e) {
-    console.log(e);
+    console.error(e);
     dispatch({
       type: GLOBAL_SET_ERROR,
       payload: 'Failed rejecting the page. Try restarting the application.',

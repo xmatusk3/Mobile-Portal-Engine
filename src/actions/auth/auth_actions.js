@@ -24,16 +24,15 @@ export const selectSite = site => ({
 });
 
 export const selectSiteById = siteId => (dispatch, getState) => {
-  console.log(getState().auth.sites[siteId]);
   dispatch(selectSite(getState().auth.sites[siteId]));
 };
 
 export const connectToServer = (address, navigate) => async dispatch => {
-  if (address.startsWith('http') && !address.startsWith('http')) {
+  if (address.startsWith('http') && !address.startsWith('https')) {
     address = address.replace('http', 'https');
   }
 
-  if (!address.startsWith('http')) {
+  if (!address.startsWith('https')) {
     address = `https://${address}`;
   }
 
@@ -44,7 +43,7 @@ export const connectToServer = (address, navigate) => async dispatch => {
 
   try {
     const res = await axios.get(`${address}/SiteAPI`);
-    dispatch(selectSite(res.data.Sites[2]));
+    dispatch(selectSite(res.data.Sites[0]));
     dispatch(setSites(_.keyBy(res.data.Sites, object => object.SiteID)));
     navigate('setSite');
   } catch (e) {
@@ -59,8 +58,6 @@ export const loginToServer = (username, password, navigate) => async (dispatch, 
     await authorizeToServer(dispatch, address, selectedSite, username, password);
     let { data } = await getInitialDataFromServer(dispatch, address, selectedSite);
 
-    console.log('got pages');
-
     // add client side additional properties to the server objects
     const enrichedPublishedPages = data.PublishedPages.map(page => {
       return {
@@ -68,8 +65,6 @@ export const loginToServer = (username, password, navigate) => async (dispatch, 
         open: page.DocumentNamePath === '/',
       };
     });
-
-    console.log('dispatching pages');
 
     dispatch(
       savePages({
@@ -110,8 +105,6 @@ const authorizeToServer = async (dispatch, address, selectedSite, username, pass
 const getInitialDataFromServer = async (dispatch, address, selectedSite) => {
   try {
     const token = await AsyncStorage.getItem('jwt-token');
-
-    console.log('requesting pages');
 
     return axios.get(`${address}/PagesAPI/${selectedSite.SiteID}`, {
       headers: {

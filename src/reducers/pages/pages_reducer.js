@@ -25,7 +25,6 @@ export default (state = INIT_STATE, { type, payload }) => {
         },
       };
     case PAGES_SAVE_PAGES:
-      console.log(payload.notPublishedPages);
       return { ...state, ...payload };
     case PAGES_SELECT_PAGE:
       return { ...state, selectedPage: payload };

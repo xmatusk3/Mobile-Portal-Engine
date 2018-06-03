@@ -39,8 +39,6 @@ class CustomDrawerWorkflowItems extends Component {
     const color = focused ? activeTintColor : inactiveTintColor;
     const backgroundColor = focused ? activeBackgroundColor : inactiveBackgroundColor;
     const label = page.DocumentNamePath.trimLeft('/');
-    console.log('inactive tint', inactiveTintColor);
-    console.log('label', labelStyle);
 
     return (
       <View key={page.DocumentID}>

@@ -25,7 +25,6 @@ class CustomDrawerPublishedItems extends Component {
 
   _renderSubItems = (page, level) => {
     if (!page.open || page.DocumentChildrenIDs.length === 0) return false;
-    console.log('WTF');
 
     return page.DocumentChildrenIDs.reduce((acc, pageId) => {
       if (this.props.pages[pageId]) {
@@ -40,7 +39,6 @@ class CustomDrawerPublishedItems extends Component {
     if (subItems.length === 0) {
       return null;
     }
-    console.log('it is still here:', pageId);
 
     return (
       <TouchableOpacity onPress={() => this.props.toggleSubItems(pageId)}>
@@ -85,7 +83,6 @@ class CustomDrawerPublishedItems extends Component {
             {this._renderDDLToggle(page.DocumentID, page.DocumentChildrenIDs, page.open, focused)}
             <TouchableOpacity
               onPress={() => {
-                console.log('selectujem pagu:', page);
                 this.props.selectPage(page);
                 navigate('DrawerClose');
               }}
