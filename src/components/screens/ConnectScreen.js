@@ -8,13 +8,15 @@ import { LoadingScreen } from '.';
 import { toggleLoading, setServerAddress, setError, connectToServer } from '../../actions';
 
 class ConnectScreen extends Component {
+  state = { addressText: 'matusmbak.azurewebsites.net' };
   _onConnect = () => {
     this.props.setError('');
-    if (!this.props.address) {
+    if (!this.state.addressText) {
       this.props.setError('Address field cannot be empty!');
       return;
     }
 
+    this.props.setServerAddress(this.state.addressText);
     this.props.toggleLoading();
     this.props.connectToServer(this.props.address, this.props.navigation.navigate);
   };
@@ -41,8 +43,8 @@ class ConnectScreen extends Component {
             <Input
               label={'Address:'}
               placeholder={'127.0.0.1'}
-              value={this.props.address}
-              onChangeText={text => this.props.setServerAddress(text)}
+              value={this.state.addressText}
+              onChangeText={text => this.setState({ addressText: text})}
             />
           </CardSection>
 

@@ -4,9 +4,9 @@ import { Button } from 'react-native-elements';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 
-import { Card, CardSection, Input } from '../common';
+import { Card, CardSection } from '../common';
 import { LoadingScreen } from '.';
-import { toggleLoading, setError, selectSiteById } from '../../actions';
+import { toggleLoading, setError, selectSiteByName } from '../../actions';
 
 class SetSiteScreen extends Component {
   componentWillMount() {
@@ -16,8 +16,8 @@ class SetSiteScreen extends Component {
   }
 
   _getPickerItems = () => {
-    return _.map(this.props.sites, (site, index) => (
-      <Picker.Item key={site.SiteID} label={site.SiteDisplayName} value={site.SiteID} />
+    return _.map(this.props.sites, (site) => (
+      <Picker.Item key={site.siteName} label={site.siteDisplayName} value={site.siteName} />
     ));
   };
 
@@ -42,9 +42,9 @@ class SetSiteScreen extends Component {
           <CardSection>
             <Text>Select site:</Text>
             <Picker
-              selectedValue={this.props.selectedSite.SiteID}
+              selectedValue={this.props.selectedSite.siteName}
               style={{ width: 200 }}
-              onValueChange={(itemValue, itemIndex) => { this.props.selectSiteById(itemValue) } }>
+              onValueChange={(itemValue) => { this.props.selectSiteByName(itemValue) } }>
               {this._getPickerItems()}
             </Picker>
           </CardSection>
@@ -115,7 +115,7 @@ const mapStateToProps = ({ global: { loading, error }, auth: { sites, selectedSi
 
 const connectedComponent = connect(mapStateToProps, {
   toggleLoading,
-  selectSiteById,
+  selectSiteByName,
   setError,
 })(SetSiteScreen);
 

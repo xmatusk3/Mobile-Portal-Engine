@@ -1,96 +1,83 @@
-import axios from 'axios';
 import { AsyncStorage } from 'react-native';
-import querystring from 'querystring';
+import axios from 'axios';
+import _ from 'lodash';
+
 import {
   PAGES_TOGGLE_SUBITEMS,
-  PAGES_UPDATE_WORKFLOW_PAGE,
-  PAGES_SAVE_PAGES,
-  PAGES_SELECT_PAGE,
-  GLOBAL_SET_ERROR,
+  PAGES_SAVE_ITEMS,
+  PAGES_SAVE_INITIAL_ITEMS,
 } from '../types';
-import { toggleLoading } from '../';
+import { setError, toggleLoading, selectItem } from '..';
+import utils from '../../utils/utils.js';
 
 export const toggleSubItems = pageId => ({
   type: PAGES_TOGGLE_SUBITEMS,
   payload: pageId,
 });
 
-export const savePages = pages => ({
-  type: PAGES_SAVE_PAGES,
+export const savePages = (pages, parentId, childrenIDs) => ({
+  type: PAGES_SAVE_ITEMS,
+  payload: {
+    pages,
+    parentId,
+    childrenIDs
+  }
+});
+
+export const saveInitialPages = pages => ({
+  type: PAGES_SAVE_INITIAL_ITEMS,
   payload: pages,
 });
 
-export const selectPage = page => ({
-  type: PAGES_SELECT_PAGE,
-  payload: page,
-});
-
-export const updateWorkflowPage = page => ({
-  type: PAGES_UPDATE_WORKFLOW_PAGE,
-  payload: page,
-});
-
-export const approvePage = (nextStepId, comment, navigate) => async (dispatch, getState) => {
+export const loadPages = (parentId = 0) => async (dispatch, getState) => {
   try {
-    const address = getState().auth.address;
-    const page = getState().pages.selectedPage;
+    const { address, selectedSite } = getState().auth;
     const token = await AsyncStorage.getItem('jwt-token');
-    const headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Bearer ${token}`,
-    };
 
-    const body = {
-      PageID: page.DocumentID,
-      WorkflowStepID: nextStepId,
-      Comment: comment,
-    };
-
-    let { data } = await axios.post(`${address}/ApproveStepAPI`, querystring.stringify(body), {
-      headers,
+    let {data} = await axios.get(`${address}/PagesAPI/GetPages/${selectedSite.siteName}/${parentId || ''}`, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Bearer ${token}`,
+      },
     });
 
-    dispatch(updateWorkflowPage(data.UpdatedPage));
-    navigate('preview');
-    dispatch(toggleLoading());
+    if (!parentId) {
+      const rootPageId = data.find(page => page.documentParentID === 0).documentID;;
+      const { processedPages, childIds } = processPages(data, selectedSite.siteDomainName, rootPageId);
+
+      processedPages[rootPageId] = {
+        ...processedPages[rootPageId],
+        documentChildrenIDs: childIds
+      };
+
+      dispatch(selectItem(processedPages[rootPageId]));
+      dispatch(saveInitialPages(processedPages));
+    } else {
+      const { processedPages, childIds } = processPages(data, selectedSite.siteDomainName, parentId);
+      dispatch(savePages(processedPages, parentId, childIds));
+    }
   } catch (e) {
     console.error(e);
-    dispatch({
-      type: GLOBAL_SET_ERROR,
-      payload: 'Failed approving the page. Try restarting the application.',
-    });
+    dispatch(setError('Server error'));
     dispatch(toggleLoading());
   }
-};
+}
 
-export const rejectPage = (prevStepId, comment, navigate) => async (dispatch, getState) => {
-  try {
-    const address = getState().auth.address;
-    const page = getState().pages.selectedPage;
-    const token = await AsyncStorage.getItem('jwt-token');
-    const headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Bearer ${token}`,
+const processPages = (data, domain, parentId) => {
+  const childIds = [];
+  const enrichedPages = data.map(page => {
+    if (page.documentParentID === parentId) {
+      childIds.push(page.documentID);
+    }
+
+    return { 
+      ...page, 
+      open: page.documentParentID === 0,
+      previewURL: utils.ensureHttpsAddress(utils.relativeToAbsoluteUrl(page.previewURL, domain)),
     };
-    const body = {
-      PageID: page.DocumentID,
-      WorkflowStepID: prevStepId,
-      Comment: comment,
-    };
+  });
 
-    let { data } = await axios.post(`${address}/RejectStepAPI`, querystring.stringify(body), {
-      headers,
-    });
-
-    dispatch(updateWorkflowPage(data.UpdatedPage));
-    navigate('preview');
-    dispatch(toggleLoading());
-  } catch (e) {
-    console.error(e);
-    dispatch({
-      type: GLOBAL_SET_ERROR,
-      payload: 'Failed rejecting the page. Try restarting the application.',
-    });
-    dispatch(toggleLoading());
-  }
-};
+  const processedPages =  _.keyBy(enrichedPages, page => page.documentID);
+  
+  return {processedPages, childIds};
+}

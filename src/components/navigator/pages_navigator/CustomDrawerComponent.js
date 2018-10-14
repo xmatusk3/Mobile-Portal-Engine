@@ -4,12 +4,12 @@ import { SafeAreaView } from 'react-navigation';
 import { CustomDrawerPublishedItems, CustomDrawerWorkflowItems } from '.';
 
 class CustomDrawerComponent extends Component {
-  state = { published: true };
+  state = { workflow: false };
 
   _renderItemList = () => {
-    return this.state.published ? 
-      <CustomDrawerPublishedItems {...this.props} /> 
-      : <CustomDrawerWorkflowItems {...this.props} />;
+    return this.state.workflow ? 
+      <CustomDrawerWorkflowItems {...this.props} />
+      : <CustomDrawerPublishedItems {...this.props} />;
   };
 
   render() {
@@ -17,11 +17,11 @@ class CustomDrawerComponent extends Component {
       <ScrollView>
         <SafeAreaView style={{ flex: 1 }} forceInset={{ top: 'always', horizontal: 'never' }}>
           <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity style={{ flex: 1 }} onPress={() => this.setState({ published: true })}>
-              <Text style={[styles.buttonStyle, {backgroundColor: this.state.published ? 'transparent' : '#d6d9d6'}]}>Published</Text>
+            <TouchableOpacity style={{ flex: 1 }} onPress={() => this.setState({ workflow: false })}>
+              <Text style={[styles.buttonStyle, {backgroundColor: this.state.workflow ? '#d6d9d6' : 'transparent'}]}>Pages</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1 }} onPress={() => this.setState({ published: false })}>
-              <Text style={[styles.buttonStyle, {backgroundColor: this.state.published ? '#d6d9d6' : 'transparent'}]}>Waiting for approval</Text>
+            <TouchableOpacity style={{ flex: 1 }} onPress={() => this.setState({ workflow: true })}>
+              <Text style={[styles.buttonStyle, {backgroundColor: this.state.workflow ? 'transparent' : '#d6d9d6'}]}>Pending pages</Text>
             </TouchableOpacity>
           </View>
           {this._renderItemList()}

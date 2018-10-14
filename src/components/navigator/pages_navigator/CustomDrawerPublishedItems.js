@@ -10,7 +10,7 @@ import { Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 
-import { toggleSubItems, selectPage } from '../../../actions/index';
+import { toggleSubItems, selectItem, loadPages } from '../../../actions';
 
 /**
  * Component that renders the navigation list in the drawer.
@@ -23,10 +23,17 @@ class CustomDrawerPublishedItems extends Component {
     inactiveBackgroundColor: 'transparent',
   };
 
-  _renderSubItems = (page, level) => {
-    if (!page.open || page.DocumentChildrenIDs.length === 0) return false;
+  _toggleSubItems = (page) => {
+    if (!page.documentChildrenIDs || page.documentChildrenIDs.length) {
+      this.props.loadPages(page.documentID);
+    }
+    this.props.toggleSubItems(page.documentID);
+  }
 
-    return page.DocumentChildrenIDs.reduce((acc, pageId) => {
+  _renderSubItems = (page, level) => {
+    if (!page.open || !page.documentChildrenIDs) return false;
+
+    return page.documentChildrenIDs.reduce((acc, pageId) => {
       if (this.props.pages[pageId]) {
         const newPageJSX = this._renderItem(this.props.pages[pageId], level);
         acc.push(newPageJSX);
@@ -35,15 +42,15 @@ class CustomDrawerPublishedItems extends Component {
     }, []);
   };
 
-  _renderDDLToggle = (pageId, subItems, isOpen, isFocused) => {
-    if (subItems.length === 0) {
+  _renderDDLToggle = (page, isFocused) => {
+    if (!page.documentHasChildren) {
       return null;
     }
 
     return (
-      <TouchableOpacity onPress={() => this.props.toggleSubItems(pageId)}>
+      <TouchableOpacity onPress={() => this._toggleSubItems(page)}>
         <View style={[styles.icon, isFocused ? styles.inactiveIcon : null]}>
-          {isOpen ? (
+          {page.open ? (
             <Icon type="entypo" name="circle-with-minus" />
           ) : (
             <Icon type="entypo" name="circle-with-plus" />
@@ -65,25 +72,25 @@ class CustomDrawerPublishedItems extends Component {
       labelStyle,
     } = this.props;
 
-    const focused = page.DocumentID === this.props.selectedPage.DocumentID;
+    const focused = page.documentID === this.props.selectedItem.documentID;
     const color = focused ? activeTintColor : inactiveTintColor;
     const backgroundColor = focused ? activeBackgroundColor : inactiveBackgroundColor;
-    const label = page.DocumentName || '/';
+    const label = page.documentName || '/';
 
     return (
-      <View key={page.DocumentID}>
+      <View key={page.documentID}>
         <View
-          style={{ backgroundColor, marginLeft: 16 * level + (page.DocumentChildrenIDs.length === 0 ? 40 : 0) }}
+          style={{ backgroundColor, marginLeft: 16 * level + (page.documentHasChildren ? 0 : 40) }}
           forceInset={{
             [drawerPosition]: 'always',
             [drawerPosition === 'left' ? 'right' : 'left']: 'never',
             vertical: 'never',
           }}>
           <View style={[styles.item, itemStyle]}>
-            {this._renderDDLToggle(page.DocumentID, page.DocumentChildrenIDs, page.open, focused)}
+            {this._renderDDLToggle(page, focused)}
             <TouchableOpacity
               onPress={() => {
-                this.props.selectPage(page);
+                this.props.selectItem(page);
                 navigate('DrawerClose');
               }}
               delayPressIn={0}>
@@ -104,7 +111,7 @@ class CustomDrawerPublishedItems extends Component {
     }
 
     const renderedPages = this._renderItem(
-      _.values(pages).find(page => page.DocumentNamePath === '/'),
+      _.values(pages).find(page => page.documentParentID === 0),
       0
     );
 
@@ -143,11 +150,11 @@ const styles = StyleSheet.create({
   },
 });
 
-const mapStateToProps = ({ pages }) => {
-  return { pages: pages.publishedPages, selectedPage: pages.selectedPage };
+const mapStateToProps = ({ pages, selectedItem }) => {
+  return { pages, selectedItem };
 };
 
-const connectedComponent = connect(mapStateToProps, { toggleSubItems, selectPage })(
+const connectedComponent = connect(mapStateToProps, { toggleSubItems, selectItem, loadPages })(
   CustomDrawerPublishedItems
 );
 

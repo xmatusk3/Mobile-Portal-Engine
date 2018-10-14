@@ -5,10 +5,10 @@ import { connect } from 'react-redux';
 
 import { Input, Card, CardSection } from '../common';
 import { LoadingScreen } from '.';
-import { setError, toggleLoading, loginToServer } from '../../actions';
+import { setError, toggleLoading, authorizeToServer } from '../../actions';
 
 class LoginScreen extends Component {
-  state = { login: '', password: '' };
+  state = { login: 'Administrator', password: '87er2' };
 
   componentWillMount() {
     if (this.props.loading) {
@@ -24,7 +24,7 @@ class LoginScreen extends Component {
     }
 
     this.props.toggleLoading();
-    this.props.loginToServer(this.state.login, this.state.password, this.props.navigation.navigate);
+    this.props.authorizeToServer(this.state.login, this.state.password, this.props.navigation.navigate);
   };
 
   _renderLogin = () => {
@@ -126,7 +126,7 @@ const mapStateToProps = ({ global: { loading, error } }) => {
 const connectedComponent = connect(mapStateToProps, {
   setError,
   toggleLoading,
-  loginToServer,
+  authorizeToServer,
 })(LoginScreen);
 
 export { connectedComponent as LoginScreen };

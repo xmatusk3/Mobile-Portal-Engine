@@ -1,12 +1,12 @@
 import axios from 'axios';
 import _ from 'lodash';
 import base64 from 'base-64';
-import utf8 from 'utf8';
 import { AsyncStorage } from 'react-native';
 
 import { AUTH_SET_SERVER_ADDRESS, AUTH_SET_SITES, AUTH_SET_CURRENT_SITE } from '../types';
+import { loadPages } from '../pages/pages_actions';
 import { setError, toggleLoading } from '../global/global_actions';
-import { savePages } from '..';
+import utils from '../../utils/utils';
 
 export const setServerAddress = text => ({
   type: AUTH_SET_SERVER_ADDRESS,
@@ -23,98 +23,53 @@ export const selectSite = site => ({
   payload: site,
 });
 
-export const selectSiteById = siteId => (dispatch, getState) => {
-  dispatch(selectSite(getState().auth.sites[siteId]));
+export const selectSiteByName = siteName => (dispatch, getState) => {
+  dispatch(selectSite(getState().auth.sites[siteName]));
 };
 
 export const connectToServer = (address, navigate) => async dispatch => {
-  if (address.startsWith('http') && !address.startsWith('https')) {
-    address = address.replace('http', 'https');
-  }
+  address = utils.ensureHttpsAddress(address);
 
-  if (!address.startsWith('https')) {
-    address = `https://${address}`;
-  }
-
-  if (!address.endsWith('/customkenticopagesapi')) {
-    address += '/customkenticopagesapi';
+  if (!address.endsWith('/kentico.pagesapp')) {
+    address += '/kentico.pagesapp';
   }
   dispatch(setServerAddress(address));
 
   try {
-    const res = await axios.get(`${address}/SiteAPI`);
-    dispatch(selectSite(res.data.Sites[0]));
-    dispatch(setSites(_.keyBy(res.data.Sites, object => object.SiteID)));
+    let { data } = await axios.get(`${address}/SiteAPI/GetSites`);
+    dispatch(selectSite(data[0]));
+    dispatch(setSites(_.keyBy(data, site => site.siteName)));
     navigate('setSite');
   } catch (e) {
     dispatch(setError('Could not connect to the server.'));
     dispatch(toggleLoading());
-  }
-};
-
-export const loginToServer = (username, password, navigate) => async (dispatch, getState) => {
-  const { address, selectedSite } = getState().auth;
-  try {
-    await authorizeToServer(dispatch, address, selectedSite, username, password);
-    let { data } = await getInitialDataFromServer(dispatch, address, selectedSite);
-
-    // add client side additional properties to the server objects
-    const enrichedPublishedPages = data.PublishedPages.map(page => {
-      return {
-        ...page,
-        open: page.DocumentNamePath === '/',
-      };
-    });
-
-    dispatch(
-      savePages({
-        publishedPages: _.keyBy(enrichedPublishedPages, page => page.DocumentID),
-        notPublishedPages: _.keyBy(data.NotPublishedPages, page => page.DocumentID),
-        selectedPage: enrichedPublishedPages[0],
-      })
-    );
-
-    navigate('main');
-    dispatch(toggleLoading());
-  } catch (e) {
     console.error(e);
-    dispatch(toggleLoading());
   }
 };
 
-const authorizeToServer = async (dispatch, address, selectedSite, username, password) => {
+export const authorizeToServer = (username, password, navigate) => async (dispatch, getState) => {
   try {
+    const { address, selectedSite } = getState().auth;
+
     const authorizationHeader = `Basic ${base64.encode(
-      `${username}:${password}:${selectedSite.SiteName}`
+      `${username}:${password}:${selectedSite.siteName}`
     )}`;
 
-    let { data } = await axios.post(`${address}/TokenAPI`, null, {
+    let { data } = await axios.get(`${address}/TokenAPI/GetJwtToken`, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: authorizationHeader,
       },
     });
-    await AsyncStorage.setItem('jwt-token', data.Token);
+
+    await AsyncStorage.setItem('jwt-token', data);
+    await loadPages()(dispatch, getState);
+
+    navigate('main');
+    dispatch(toggleLoading());
   } catch (e) {
     console.error(e);
     dispatch(setError('Invalid username or password.'));
-    throw e;
-  }
-};
-
-const getInitialDataFromServer = async (dispatch, address, selectedSite) => {
-  try {
-    const token = await AsyncStorage.getItem('jwt-token');
-
-    return axios.get(`${address}/PagesAPI/${selectedSite.SiteID}`, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  } catch (e) {
-    console.error(e);
-    dispatch(setError('Server error'));
-    throw e;
+    dispatch(toggleLoading());
   }
 };

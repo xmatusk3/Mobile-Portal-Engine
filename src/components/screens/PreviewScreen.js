@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { WebView, View, Platform, StatusBar, Text } from 'react-native';
 import { connect } from 'react-redux';
 import { Button } from 'react-native-elements';
+import _ from 'lodash';
+
 import { LoadingScreen } from '.';
 
 class PreviewScreen extends Component {
@@ -9,12 +11,14 @@ class PreviewScreen extends Component {
   _onReject = () => this.props.navigation.navigate('reject');
 
   _renderWorkflowButtons = () => {
-    if (this.props.page.DocumentChildrenIDs !== undefined) {
+    const page = this.props.page;
+    if (page.documentHasChildren !== undefined) {
       return null;
     }
+    
     return (
       <View style={styles.buttonContainer}>
-        {this.props.page.PreviousWorkflowSteps.length !== 0 && (
+        {page.previousWorkflowSteps.length !== 0 && (
           <View style={{ flex: 1 }}>
             <Button
               title="Reject"
@@ -24,7 +28,7 @@ class PreviewScreen extends Component {
             />
           </View>
         )}
-        {this.props.page.NextWorkflowSteps.length !== 0 && (
+        {page.nextWorkflowSteps.length !== 0 && (
           <View style={{ flex: 1 }}>
             <Button
               title="Approve"
@@ -39,7 +43,8 @@ class PreviewScreen extends Component {
   };
 
   _renderWorkflowStepName = () => {
-    if (this.props.page.DocumentChildrenIDs !== undefined) {
+    const page = this.props.page;
+    if (page.documentHasChildren !== undefined) {
       return null;
     }
     return (
@@ -51,13 +56,23 @@ class PreviewScreen extends Component {
           paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         }}>
         <Text>
-          Current workflow step: {this.props.page.CurrentWorkflowStep.WorkflowStepDisplayName}
+          Current workflow step: {page.currentWorkflowStep.workflowStepDisplayName}
         </Text>
       </View>
     );
   };
 
   render() {
+    const page = this.props.page;
+
+    if (_.isEmpty(page)) {
+      return (
+        <View style={styles.noPageSelectedView}>
+          <Text style={styles.normalTextStyle}>Please select a page.</Text>
+        </View>)
+      ;
+    }
+
     return (
       <View style={{ flex: 1 }}>
         {this._renderWorkflowStepName()}
@@ -65,13 +80,13 @@ class PreviewScreen extends Component {
           style={{
             flex: 10,
             paddingTop:
-              Platform.OS === 'android' && this.props.page.DocumentChildrenIDs !== undefined
+              Platform.OS === 'android' && page.documentHasChildren !== undefined
                 ? StatusBar.currentHeight
                 : 0,
           }}>
           <WebView
             style={{ flex: 1 }}
-            source={{ uri: this.props.page.AbsoluteURL }}
+            source={{ uri: page.previewURL }}
             renderLoading={() => <LoadingScreen />}
           />
         </View>
@@ -86,10 +101,20 @@ const styles = {
     flex: 1,
     flexDirection: 'row',
   },
+  noPageSelectedView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  normalTextStyle: {
+    fontSize: 30,
+    textAlign: 'center',
+    color: '#2a2a2a',
+  },
 };
 
-const mapStateToProps = state => ({
-  page: state.pages.selectedPage,
+const mapStateToProps = ({ selectedItem }) => ({
+  page: selectedItem,
 });
 
 const connectedComponent = connect(mapStateToProps)(PreviewScreen);

@@ -1,41 +1,32 @@
 import {
   PAGES_TOGGLE_SUBITEMS,
-  PAGES_SAVE_PAGES,
-  PAGES_SELECT_PAGE,
-  PAGES_UPDATE_WORKFLOW_PAGE,
+  PAGES_SAVE_ITEMS,
+  PAGES_SAVE_INITIAL_ITEMS,
 } from '../../actions/types';
 
-const INIT_STATE = {
-  publishedPages: {},
-  notPublishedPages: {},
-  selectedPage: {},
-};
+const INIT_STATE = {};
 
 export default (state = INIT_STATE, { type, payload }) => {
   switch (type) {
     case PAGES_TOGGLE_SUBITEMS:
       return {
         ...state,
-        publishedPages: {
-          ...state.publishedPages,
-          [payload]: {
-            ...state.publishedPages[payload],
-            open: !state.publishedPages[payload].open || false,
-          },
+        [payload]: {
+          ...state[payload],
+          open: !state[payload].open || false,
         },
       };
-    case PAGES_SAVE_PAGES:
-      return { ...state, ...payload };
-    case PAGES_SELECT_PAGE:
-      return { ...state, selectedPage: payload };
-    case PAGES_UPDATE_WORKFLOW_PAGE:
-      return {
+    case PAGES_SAVE_ITEMS:
+      return { 
         ...state,
-        notPublishedPages: {
-          ...state.notPublishedPages,
-          [payload.DocumentID]: payload,
-        },
-      };
+        ...payload.pages,
+        [payload.parentId]: {
+          ...state[payload.parentId],
+          documentChildrenIDs: payload.childrenIDs
+        }
+       };
+    case PAGES_SAVE_INITIAL_ITEMS:
+      return { ...payload };
     default:
       return state;
   }

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
 
-import { View, Text, AsyncStorage } from 'react-native';
+import { View, AsyncStorage } from 'react-native';
 
 import Slides from '../common/Slides';
 import { LoadingScreen } from '.';
@@ -13,11 +13,13 @@ const SLIDES_TEXT = [
   'But first enter your Kentico configuration to access your server!',
 ];
 
+const TOKEN_NAME = 'kentico_complete_intro';
+
 class IntroScreen extends Component {
   state = { token: null };
 
   async componentWillMount() {
-    let token = await AsyncStorage.getItem('kentico_complete_intro');
+    let token = await AsyncStorage.getItem(TOKEN_NAME);
 
     if (token) {
       this.props.navigation.navigate('connect');
@@ -27,6 +29,7 @@ class IntroScreen extends Component {
   }
 
   _onSlideComplete = () => {
+    AsyncStorage.setItem(TOKEN_NAME, true);
     this.props.navigation.navigate('connect');
   };
 

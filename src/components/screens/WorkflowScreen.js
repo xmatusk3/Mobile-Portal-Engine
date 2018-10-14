@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Picker, Text, View } from 'react-native';
 import { Button } from 'react-native-elements';
 import { connect } from 'react-redux';
+import _ from 'lodash';
 
 import { Card, CardSection, Input } from '../common';
 import { rejectPage, approvePage, toggleLoading } from '../../actions';
@@ -12,9 +13,18 @@ class WorkflowScreen extends Component {
   isApproveScreen = this.props.isApprove;
 
   componentWillMount() {
-    const { NextWorkflowSteps, PreviousWorkflowSteps } = this.props.page;
+    this._updateSelectedStep(this.props.page);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this._updateSelectedStep(nextProps.page);
+  }
+
+  _updateSelectedStep = ({ nextWorkflowSteps, previousWorkflowSteps }) => {
+    if (!nextWorkflowSteps || !previousWorkflowSteps) return;
+
     this.setState({
-      selectedStep: this.isApproveScreen ? NextWorkflowSteps[0] : PreviousWorkflowSteps[0],
+      selectedStep: this.isApproveScreen ? nextWorkflowSteps[0] : previousWorkflowSteps[0],
     });
   }
 
@@ -22,14 +32,14 @@ class WorkflowScreen extends Component {
     if (this.isApproveScreen) {
       this.props.toggleLoading();
       this.props.approvePage(
-        this.state.selectedStep.WorkflowStepID,
+        this.state.selectedStep.workflowStepID,
         this.state.comment,
         this.props.navigation.navigate
       );
     } else {
       this.props.toggleLoading();
       this.props.rejectPage(
-        this.state.selectedStep.WorkflowStepID,
+        this.state.selectedStep.workflowStepID,
         this.state.comment,
         this.props.navigation.navigate
       );
@@ -37,16 +47,20 @@ class WorkflowScreen extends Component {
   };
 
   _getPickerItems = () => {
-    const { NextWorkflowSteps, PreviousWorkflowSteps } = this.props.page;
-    const workflowSteps = this.isApproveScreen ? NextWorkflowSteps : PreviousWorkflowSteps;
+    const { nextWorkflowSteps, previousWorkflowSteps } = this.props.page;
+    const workflowSteps = this.isApproveScreen ? nextWorkflowSteps : previousWorkflowSteps;
 
     return workflowSteps.map(step => (
-      <Picker.Item key={step.WorkflowStepID} label={step.WorkflowStepDisplayName} value={step} />
+      <Picker.Item key={step.workflowStepID} label={step.workflowStepDisplayName} value={step} />
     ));
   };
 
   render() {
-    if (this.props.loading) {
+    if (this.props.page.documentHasChildren !== undefined) {
+      return null; 
+    }
+
+    if (this.props.loading || _.isEmpty(this.props.page)) {
       return <LoadingScreen />;
     }
 
@@ -116,8 +130,8 @@ const styles = {
   },
 };
 
-const mapStateToProps = ({ pages, global }) => {
-  return { page: pages.selectedPage, loading: global.loading, error: global.error };
+const mapStateToProps = ({ global, selectedItem }) => {
+  return { page: selectedItem, loading: global.loading, error: global.error };
 };
 
 const connectedComponent = connect(mapStateToProps, { rejectPage, approvePage, toggleLoading })(
