@@ -5,7 +5,7 @@ import {
 } from '../../actions/types';
 
 const INIT_STATE = {
-  address: 'matusmbak.azurewebsites.net',
+  address: '',
   sites: {},
   selectedSite: {},
 };

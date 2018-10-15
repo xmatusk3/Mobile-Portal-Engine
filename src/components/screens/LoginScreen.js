@@ -8,7 +8,7 @@ import { LoadingScreen } from '.';
 import { setError, toggleLoading, authorizeToServer } from '../../actions';
 
 class LoginScreen extends Component {
-  state = { login: 'Administrator', password: '87er2' };
+  state = { login: '', password: '' };
 
   componentWillMount() {
     if (this.props.loading) {
