@@ -8,7 +8,7 @@ import { LoadingScreen } from '.';
 import { toggleLoading, setServerAddress, setError, connectToServer } from '../../actions';
 
 class ConnectScreen extends Component {
-  state = { addressText: 'matusmbak.azurewebsites.net' };
+  state = { addressText: '' };
   _onConnect = () => {
     this.props.setError('');
     if (!this.state.addressText) {
@@ -16,9 +16,8 @@ class ConnectScreen extends Component {
       return;
     }
 
-    this.props.setServerAddress(this.state.addressText);
     this.props.toggleLoading();
-    this.props.connectToServer(this.props.address, this.props.navigation.navigate);
+    this.props.connectToServer(this.state.addressText, this.props.navigation.navigate);
   };
 
   _renderConnect = () => {
@@ -103,8 +102,8 @@ const styles = {
   },
 };
 
-const mapStateToProps = ({ global: { loading, error }, auth: { address } }) => {
-  return { loading, error, address };
+const mapStateToProps = ({ global: { loading, error }}) => {
+  return { loading, error };
 };
 
 const connectedComponent = connect(mapStateToProps, {

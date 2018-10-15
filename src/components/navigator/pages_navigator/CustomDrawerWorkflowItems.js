@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { connect } from 'react-redux';
 import _ from 'lodash';
@@ -71,9 +72,14 @@ class CustomDrawerWorkflowItems extends Component {
   render() {
     const { itemsContainerStyle, pages } = this.props;
 
+    if (this.state.isFetching) {
+      return <ActivityIndicator size="large" style={styles.loaderStyle} />;
+    }
+
     if (_.isEmpty(pages) && !this.state.isFetching) {
       return <Text style={{textAlign: 'center', color: '#2a2a2a' }}>There are no pages waiting for your approval.</Text>;
     }
+
 
     const renderedPages = _.map(pages, page => this._renderItem(page));
 

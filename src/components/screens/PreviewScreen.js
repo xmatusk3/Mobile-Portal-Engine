@@ -88,6 +88,7 @@ class PreviewScreen extends Component {
             style={{ flex: 1 }}
             source={{ uri: page.previewURL }}
             renderLoading={() => <LoadingScreen />}
+            startInLoadingState={true}
           />
         </View>
         {this._renderWorkflowButtons()}
