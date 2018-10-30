@@ -1,4 +1,10 @@
-import { SELECTEDITEM_SELECT_ITEM, WORKFLOWS_UPDATE_ITEM } from '../../actions/types';
+import _ from 'lodash';
+
+import { 
+  SELECTEDITEM_SELECT_ITEM, 
+  WORKFLOWS_UPDATE_ITEM, 
+  PAGES_SAVE_METADATA 
+} from '../../actions/types';
 
 const INIT_STATE = {};
 
@@ -12,6 +18,11 @@ export default (state = INIT_STATE, { type, payload }) => {
       return { ...payload };
     case SELECTEDITEM_SELECT_ITEM:
       return { ...payload };
+    case PAGES_SAVE_METADATA:
+      return {
+        ...state,
+        metadata: _.omit(payload, ['documentID'])
+      }
     default:
       return state;
   } 

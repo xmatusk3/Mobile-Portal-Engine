@@ -131,7 +131,11 @@ const styles = {
 };
 
 const mapStateToProps = ({ global, selectedItem }) => {
-  return { page: selectedItem, loading: global.loading, error: global.error };
+  return { 
+    page: selectedItem, 
+    loading: global.loading, 
+    error: global.error 
+  };
 };
 
 const connectedComponent = connect(mapStateToProps, { rejectPage, approvePage, toggleLoading })(

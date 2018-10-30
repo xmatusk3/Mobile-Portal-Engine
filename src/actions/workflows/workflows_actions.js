@@ -26,7 +26,6 @@ export const approvePage = (nextStepId, comment, navigate) => async (dispatch, g
     const { auth, selectedItem } = getState();
     const address = auth.address;
     const domain = auth.selectedSite.siteDomainName;
-    const page = selectedItem;
     const token = await AsyncStorage.getItem('jwt-token');
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -34,7 +33,7 @@ export const approvePage = (nextStepId, comment, navigate) => async (dispatch, g
     };
 
     const body = {
-      PageID: page.documentID,
+      PageID: selectedItem.documentID,
       WorkflowStepID: nextStepId,
       Comment: comment,
     };

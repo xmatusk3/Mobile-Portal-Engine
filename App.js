@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, StatusBar } from 'react-native';
+import { StyleSheet, View, Platform, StatusBar } from 'react-native';
 import { TabNavigator, DrawerNavigator } from 'react-navigation';
 import { Provider } from 'react-redux';
 import _ from 'lodash';
@@ -8,6 +8,7 @@ import {
   IntroScreen,
   LoginScreen,
   PreviewScreen,
+  MetadataScreen,
   ConnectScreen,
   SetSiteScreen,
   WorkflowScreen,
@@ -22,13 +23,22 @@ export default class App extends React.Component {
         content: TabNavigator(
           {
             preview: { screen: PreviewScreen },
+            metadata: { screen: MetadataScreen },
             approve: { screen: props => <WorkflowScreen isApprove={true} {...props} /> },
             reject: { screen: props => <WorkflowScreen isApprove={false} {...props} /> },
           },
           {
             lazy: true,
             swipeEnabled: false,
-            navigationOptions: { tabBarVisible: false },
+            initialRouteName: 'preview',
+            tabBarOptions: {
+              style: {
+                paddingTop:
+                  Platform.OS === 'android'
+                    ? StatusBar.currentHeight
+                    : 0,
+              }
+            }
           }
         ),
       },
@@ -47,6 +57,7 @@ export default class App extends React.Component {
         setSite: { screen: SetSiteScreen },
         login: { screen: LoginScreen },
         main: { screen: this._pageTreeNavigator() },
+        placeholder: { screen: MetadataScreen }
       },
       {
         navigationOptions: { tabBarVisible: false },

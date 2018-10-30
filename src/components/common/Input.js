@@ -6,6 +6,7 @@ const Input = ({
   value, 
   onChangeText, 
   placeholder, 
+  multiline,
   secureTextEntry, 
   containerCustomStyle, 
   inputCustomStyle, 
@@ -19,6 +20,7 @@ const Input = ({
         underlineColorAndroid="transparent"
         secureTextEntry={secureTextEntry}
         placeholder={placeholder}
+        multiline={multiline}
         autoCorrect={false}
         style={[inputStyle, inputCustomStyle]}
         value={value}
