@@ -44,7 +44,8 @@ class SetSiteScreen extends Component {
             <Picker
               selectedValue={this.props.selectedSite.siteName}
               style={{ width: 200 }}
-              onValueChange={(itemValue) => { this.props.selectSiteByName(itemValue) } }>
+              onValueChange={(itemValue) => { this.props.selectSiteByName(itemValue) } }
+            >
               {this._getPickerItems()}
             </Picker>
           </CardSection>

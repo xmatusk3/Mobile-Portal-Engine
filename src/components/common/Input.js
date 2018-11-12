@@ -10,7 +10,8 @@ const Input = ({
   secureTextEntry, 
   containerCustomStyle, 
   inputCustomStyle, 
-  labelCustomStyle }) => {
+  labelCustomStyle,
+  disabled }) => {
   const { inputStyle, labelStyle, containerStyle } = styles;
 
   return (
@@ -25,6 +26,7 @@ const Input = ({
         style={[inputStyle, inputCustomStyle]}
         value={value}
         onChangeText={onChangeText}
+        editable={disabled}
       />
     </View>
   );

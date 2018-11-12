@@ -5,6 +5,7 @@ import {
   AUTH_SET_CURRENT_SITE,
   AUTH_SET_SITES,
   AUTH_SAVE_TAG_GROUPS,
+  AUTH_SAVE_TAG_GROUP_TAGS,
 } from '../../actions/types';
 
 const INIT_STATE = {
@@ -27,6 +28,20 @@ export default (state = INIT_STATE, { type, payload }) => {
           tagGroups: _.keyBy(payload, group => group.tagGroupID)
         }
       };
+    case AUTH_SAVE_TAG_GROUP_TAGS:
+      return {
+        ...state,
+        selectedSite: {
+          ...state.selectedSite,
+          tagGroups: {
+            ...state.selectedSite.tagGroups,
+            [payload.tagGroupId]: {
+              ...state.selectedSite.tagGroups[payload.tagGroupId],
+              tags: payload.data
+            }
+          }
+        }
+      }
     case AUTH_SET_SITES:
       return { ...state, sites: payload };
     default:

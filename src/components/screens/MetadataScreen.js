@@ -4,17 +4,16 @@ import { Button } from 'react-native-elements';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 
-import { Card, CardSection, Input } from '../common';
-import { fetchMetadata, updateMetadata, toggleLoading } from '../../actions';
+import { Card, CardSection } from '../common';
+import { TextBox, TextArea, DropDownList, MultipleChoice } from '../formFields';
+import { fetchMetadata, updateMetadata, toggleLoading, fetchTags, updateMetadataUI } from '../../actions';
 import { LoadingScreen } from '.';
 
 class MetadataScreen extends Component {
   state = {
-    pageTitle: '',
-    pageDescription: '',
-    pageKeywords: '',
-    pageTags: '',
-    selectedTagGroup: '',
+    serverMessage: '',
+    serverMessageIsError: false,
+    showTagGroupModal: false,
   };
 
   componentWillMount() {
@@ -25,109 +24,157 @@ class MetadataScreen extends Component {
     if (this.props.pageId !== nextProps.pageId) {
       this.props.fetchMetadata();
     }
-
-    if (!nextProps.metadata) return;
-
-    this.setState({
-      pageTitle: nextProps.metadata.documentTitle,
-      pageDescription: nextProps.metadata.documentDescription,
-      pageKeywords: nextProps.metadata.documentKeywords,
-      pageTags: nextProps.metadata.documentTags,
-      selectedTagGroup: `${Object.keys(nextProps.tagGroups)[0]}`
-    });
   }
 
-  _createPickerItems = () => {
+  _createDdlItems = () => {
     return Object.values(this.props.tagGroups)
       .map(group => 
         <Picker.Item key={group.tagGroupID} label={group.tagGroupDisplayName} value={group.tagGroupID} />
       );
   }
 
+  _onSelectTagsPress = () => {
+    this.props.fetchTags(this.props.selectedTagGroup.fieldValue.tagGroupID, 
+      () => { 
+        this._onCreateModalData();
+        this.setState({ showTagGroupModal: true });
+      });
+  }
+
+  _onSetNewTags = (newTags) => {
+    this.props.updateMetadataUI(this.props.pageId, { documentTags: newTags.join(', ') });
+    this.setState({ showTagGroupModal: false });
+  }
+
+  _onSaveResponse = (message, isError) => {
+    this.setState({ serverMessage: message, serverMessageIsError: isError });
+    setTimeout(() => this.setState({ serverMessage: '' }), 5000);
+  }
+
   _onSave = () => {
     this.props.toggleLoading();
     
     this.props.updateMetadata(
-      this.state.pageTitle,
-      this.state.pageDescription,
-      this.state.pageKeywords,
-      this.state.selectedTagGroup,
-      this.state.pageTags
+      this.props.pageTitle,
+      this.props.pageDescription,
+      this.props.pageKeywords,
+      { checkboxValue: this.props.selectedTagGroup.checkboxValue, fieldValue: this.props.selectedTagGroup.fieldValue ? this.props.selectedTagGroup.fieldValue.tagGroupID : null },
+      this.props.pageTags,
+      this._onSaveResponse,
     );
   }
 
+  _onCreateModalData = () => 
+    {
+      if (!this.props.tagGroups || !this.props.tagGroups[this.props.selectedTagGroup.fieldValue.tagGroupID]) {
+        return;
+      }
+
+      const res = _.keyBy(
+                    _.mapValues(
+                      this.props.tagGroups[this.props.selectedTagGroup.fieldValue.tagGroupID].tags, 
+                      tag => ({title: tag.tagDisplayName, additionalInfo: ` (${tag.tagCount})`})), 
+                    item => item.title
+                  );
+      this.setState({ tagGroupTags: res });
+    }
+
   render() {
-    if (this.props.loading || !this.props.metadata) {
+    if (this.props.loading) {
       return <LoadingScreen />;
     }
 
+    const { pageIsNotRoot, tagGroups, pageTitle, pageDescription, pageKeywords, selectedTagGroup, pageTags } = this.props;
+    const { serverMessageIsError, serverMessage } = this.state;
+
     return (
       <View style={{ flex: 1 }}>
-        <View style={{ flex: 10 }}>
+        {serverMessage ? 
+        <View style={styles.serverMessageContainer}>
+          <Text style={serverMessageIsError ? styles.errorText : styles.successText}>
+            {serverMessage}
+          </Text> 
+        </View>
+        : null}
+        <MultipleChoice
+          visible={this.state.showTagGroupModal}
+          onRequestClose={() => this.setState({ showTagGroupModal: false })}
+          onConfirm={(newTags) => this._onSetNewTags(newTags)}
+          items={this.state.tagGroupTags}
+          selectedItems={this.props.pageTags.split(', ')}
+        />
+        <View style={{ flex: serverMessage ? 9.5 : 10 }}>
           <ScrollView style={styles.containerStyle}>
             <Card>
               <CardSection style={styles.sectionStyle}>
                 <Text style={styles.boldStyle}>Page settings</Text>
-                <Input 
-                  label={'Page title:'}
-                  placeholder={'Page title'}
-                  value={this.state.pageTitle}
-                  onChangeText={text => this.setState({ pageTitle: text })}
-                  labelCustomStyle={styles.labelStyle}
-                  containerCustomStyle={styles.singleRowContainerStyle}
-                  inputCustomStyle={styles.singleRowInputStyle}
+                
+                <TextBox 
+                  label='Page title:'
+                  placeholder='Page title'
+                  value={pageTitle.fieldValue}
+                  onChangeText={text => this.props.updateMetadataUI(this.props.pageId, { documentTitle: { ...pageTitle, fieldValue: text } })}
+                  disabled={pageIsNotRoot && pageTitle.checkboxValue}
+                  checkboxTitle= {pageIsNotRoot && 'Inherited'}
+                  checkboxChecked={pageTitle.checkboxValue}
+                  checkboxOnPress={() => this.props.updateMetadataUI(this.props.pageId, { documentTitle: { ...pageTitle, checkboxValue: !pageTitle.checkboxValue } })}
                 />
 
-                <Input 
-                  label={'Page description:'}
-                  placeholder={'Page description'}
-                  value={this.state.pageDescription}
-                  multiline
-                  onChangeText={text => this.setState({ pageDescription: text })}
-                  labelCustomStyle={styles.labelStyle}
-                  containerCustomStyle={styles.multipleRowsContainerStyle}
-                  inputCustomStyle={styles.multipleRowsInputStyle}
+                <TextArea 
+                  label='Page description:'
+                  placeholder='Page description'
+                  value={pageDescription.fieldValue}
+                  onChangeText={text => this.props.updateMetadataUI(this.props.pageId, { documentDescription: { ...pageDescription, fieldValue: text } })}
+                  disabled={pageIsNotRoot && pageDescription.checkboxValue}
+                  checkboxTitle={pageIsNotRoot && 'Inherited'}
+                  checkboxChecked={pageDescription.checkboxValue}
+                  checkboxOnPress={() => this.props.updateMetadataUI(this.props.pageId, { documentDescription: { ...pageDescription, checkboxValue: !pageDescription.checkboxValue } })}
                 />
 
-                <Input 
-                  label={'Page keywords (separated by comma):'}
-                  placeholder={'Cafe, Coffee, ...'}
-                  value={this.state.pageKeywords}
-                  multiline
-                  onChangeText={text => this.setState({ pageKeywords: text })}
-                  labelCustomStyle={styles.labelStyle}
-                  containerCustomStyle={styles.multipleRowsContainerStyle}
-                  inputCustomStyle={styles.multipleRowsInputStyle}
+                <TextArea 
+                  label='Page keywords (separated by comma):'
+                  placeholder='Cafe, Coffee, ...'
+                  value={pageKeywords.fieldValue}
+                  onChangeText={text => this.props.updateMetadataUI(this.props.pageId, { documentKeywords: { ...pageKeywords, fieldValue: text } })}
+                  disabled={pageIsNotRoot && pageKeywords.checkboxValue}
+                  checkboxTitle={pageIsNotRoot && 'Inherited'}
+                  checkboxChecked={pageKeywords.checkboxValue} 
+                  checkboxOnPress={() => this.props.updateMetadataUI(this.props.pageId, { documentKeywords: { ...pageKeywords, checkboxValue: !pageKeywords.checkboxValue } })}
                 />
               </CardSection>
             </Card>
 
             {/* ---------TAGS!-----------*/}
 
-            {this.props.tagGroups && !_.isEmpty(this.props.tagGroups) &&
+            {tagGroups && !_.isEmpty(tagGroups) &&
             <Card>
               <CardSection style={styles.sectionStyle}>
                 <Text style={styles.boldStyle}>Tags</Text>
-                <Text style={styles.normalStyle}>Page tag group:</Text>
-                <View style={styles.pickerContainerStyle}>
-                  <Picker
-                    selectedValue={this.state.selectedTagGroup}
-                    style={styles.pickerStyle}
-                    onValueChange={itemValue => this.setState({ selectedTagGroup: itemValue })}
-                  >
-                    {this._createPickerItems()}
-                  </Picker>
-                </View>
+                <DropDownList 
+                  label='Page tag group:'
+                  items={this._createDdlItems()}
+                  selectedValue={selectedTagGroup.fieldValue ? selectedTagGroup.fieldValue.tagGroupID : Object.values(this.props.tagGroups)[0].tagGroupID}
+                  onValueChange={itemValue => this.props.updateMetadataUI(this.props.pageId, { documentTagGroupID: { checkboxValue: selectedTagGroup.checkboxValue, fieldValue: itemValue } }) }
+                  disabled={pageIsNotRoot && selectedTagGroup.checkboxValue}
+                  checkboxTitle={pageIsNotRoot && 'Inherited'}
+                  checkboxChecked={selectedTagGroup.checkboxValue} 
+                  checkboxOnPress={() => this.props.updateMetadataUI(this.props.pageId, { documentTagGroupID: { checkboxValue: !selectedTagGroup.checkboxValue, fieldValue: selectedTagGroup.tagGroupID } }) } 
+                />
 
-                <Input 
-                  label={'Page tags (separated by comma):'}
-                  placeholder={'dogs, "angry birds", cats'}
-                  value={this.state.pageTags}
-                  multiline
-                  onChangeText={text => this.setState({ pageTags: text })}
-                  labelCustomStyle={styles.labelStyle}
-                  containerCustomStyle={styles.multipleRowsContainerStyle}
-                  inputCustomStyle={styles.multipleRowsInputStyle}
+                <TextBox 
+                  label='Page tags (separated by comma):'
+                  placeholder='dogs, "angry birds", cats'
+                  disabled={pageIsNotRoot && selectedTagGroup.checkboxValue}
+                  value={pageTags}
+                  onChangeText={text => this.props.updateMetadataUI(this.props.pageId, { documentTags: text })}
+                />
+                <Button
+                  title='Select'
+                  color='#262524'
+                  disabled={pageIsNotRoot && selectedTagGroup.checkboxValue}
+                  buttonStyle={styles.selectButtonStyle}
+                  onPress={() => this._onSelectTagsPress()}
+                  containerViewStyle={styles.selectButtonContainerStyle}
                 />
               </CardSection>
             </Card>
@@ -137,9 +184,9 @@ class MetadataScreen extends Component {
         <View style={{ flex: 1 }}>
           <Button
             title='Save'
-            buttonStyle={styles.buttonStyle}
+            buttonStyle={styles.saveButtonStyle}
             onPress={this._onSave}
-            containerViewStyle={styles.buttonContainerStyle}
+            containerViewStyle={styles.saveButtonContainerStyle}
           />
         </View>
       </View>
@@ -148,11 +195,22 @@ class MetadataScreen extends Component {
 }
 
 const styles = {
-  buttonStyle: {
+  selectButtonStyle: {
+    backgroundColor: '#bdbbbb',
+    flex: 1,
+    borderWidth: 1,
+  },
+  selectButtonContainerStyle: {
+    width: 80,
+    height: 35,
+    marginLeft: 0,
+    flex: 1,
+  },
+  saveButtonStyle: {
     backgroundColor: '#497d04', 
     flex: 1,
   },
-  buttonContainerStyle: {
+  saveButtonContainerStyle: {
     width: '100%',
     marginLeft: 0, 
     flex: 1
@@ -163,10 +221,6 @@ const styles = {
     textAlign: 'left',
     color: '#2a2a2a',
   },
-  normalStyle: {
-    fontSize: 18,
-    marginTop: 5,
-  },
   containerStyle: {
     flex: 1,
     flexDirection: 'column',
@@ -175,57 +229,40 @@ const styles = {
   sectionStyle: {
     flexDirection: 'column'
   },
-  labelStyle: {
-    paddingLeft: 0,
-    marginTop: 5,
+  serverMessageContainer: {
+    flex: 0.5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  singleRowInputStyle: {
-    marginTop: 5,
-    marginLeft: 3,
-    height: 40,
-    flex: 1,
-    borderRadius: 7,
-    borderWidth: 0.5,
-    borderColor: '#bbb'
+  errorText: {
+    fontSize: 20,
+    alignSelf: 'center',
+    color: 'red',
   },
-  singleRowContainerStyle: { 
-    height: 40,
-    width: '100%'
-  },
-  multipleRowsContainerStyle: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    height: 140,
-    marginBottom: 5
-  },
-  multipleRowsInputStyle: {
-    textAlignVertical: 'top',
-    height: 100,
-    flex: 1,
-    borderWidth: 0.5,
-    borderRadius: 7,
-    borderColor: '#bbb',
-    width: '100%',
-  },
-  pickerStyle: {
-    width: '100%',
-  },
-  pickerContainerStyle: {
-    borderRadius: 7,
-    borderWidth: 0.5,
-    borderColor: '#bbb'
+  successText: {
+    fontSize: 20,
+    alignSelf: 'center',
+    color: 'green',
   }
 };
 
 const mapStateToProps = ({ selectedItem, auth, global }) => {
+  if (!selectedItem.metadata) return { loading: true }
+
+  const { documentTitle, documentDescription, documentKeywords, documentTags, documentTagGroupID } = selectedItem.metadata;
   return {
+    pageIsNotRoot: !!selectedItem.documentName,
     pageId: selectedItem.documentID,
-    metadata: selectedItem.metadata,
+    pageTitle: documentTitle,
+    pageDescription: documentDescription,
+    pageKeywords: documentKeywords,
+    pageTags: documentTags,
+    selectedTagGroup: { checkboxValue: documentTagGroupID.checkboxValue, fieldValue: auth.selectedSite.tagGroups[documentTagGroupID.fieldValue] },
     tagGroups: auth.selectedSite.tagGroups,
     loading: global.loading
   };
 };
 
-const connectedComponent = connect(mapStateToProps, { fetchMetadata, updateMetadata, toggleLoading })(MetadataScreen);
+const connectedComponent = connect(mapStateToProps, { fetchMetadata, updateMetadata, toggleLoading, fetchTags, updateMetadataUI })(MetadataScreen);
 
 export { connectedComponent as MetadataScreen };

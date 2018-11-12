@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Platform, StatusBar } from 'react-native';
-import { TabNavigator, DrawerNavigator } from 'react-navigation';
+import { TabNavigator, DrawerNavigator, StackNavigator } from 'react-navigation';
 import { Provider } from 'react-redux';
 import _ from 'lodash';
 
@@ -17,15 +17,29 @@ import { CustomDrawerComponent } from './src/components/navigator/pages_navigato
 import store from './src/store';
 
 export default class App extends React.Component {
+  _previewWithWorkflowNavigator = () => 
+    StackNavigator(
+      {
+        previewContent: { screen: PreviewScreen },
+        approve: { screen: props => <WorkflowScreen isApprove={true} {...props} /> },
+        reject: { screen: props => <WorkflowScreen isApprove={false} {...props} /> },
+      },
+      {
+        lazy: true,
+        swipeEnabled: false,
+        initialRouteName: 'previewContent',
+        headerMode: "none"
+      }
+    );
+  
+
   _pageTreeNavigator = () =>
     DrawerNavigator(
       {
         content: TabNavigator(
           {
-            preview: { screen: PreviewScreen },
+            preview: { screen: this._previewWithWorkflowNavigator() },
             metadata: { screen: MetadataScreen },
-            approve: { screen: props => <WorkflowScreen isApprove={true} {...props} /> },
-            reject: { screen: props => <WorkflowScreen isApprove={false} {...props} /> },
           },
           {
             lazy: true,
@@ -38,7 +52,8 @@ export default class App extends React.Component {
                     ? StatusBar.currentHeight
                     : 0,
               }
-            }
+            },
+            initialRouteName: 'preview'
           }
         ),
       },

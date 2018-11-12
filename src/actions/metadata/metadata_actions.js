@@ -5,7 +5,9 @@ import querystring from 'querystring';
 import { 
   GLOBAL_SET_ERROR, 
   AUTH_SAVE_TAG_GROUPS,
-  PAGES_SAVE_METADATA
+  AUTH_SAVE_TAG_GROUP_TAGS,
+  PAGES_SAVE_METADATA,
+  PAGES_SAVE_METADATA_UI
 } from "../types";
 import { toggleLoading } from '../global/global_actions';
 
@@ -15,9 +17,7 @@ export const fetchMetadata = () => async (dispatch, getState) => {
     const { address, selectedSite } = auth;
     const token = await AsyncStorage.getItem('jwt-token');
 
-    if (!selectedSite.tagGroups) {
-      await fetchTagGroups()(dispatch, getState);
-    }
+    await fetchTagGroups()(dispatch, getState);
 
     let { data } = await axios.get(`${address}/PageMetadataAPI/GetPageMetadata/${selectedSite.siteName}/${selectedItem.documentID}`, {
       headers: {
@@ -58,7 +58,31 @@ export const fetchTagGroups = () => async (dispatch, getState) => {
   }
 }
 
-export const updateMetadata = (documentTitle, documentDescription, documentKeywords, documentTagGroupID, documentTags) => 
+export const fetchTags = (tagGroupId, successCallback) => async (dispatch, getState) => {
+  try {
+    const { address, selectedSite } = getState().auth;
+    const token = await AsyncStorage.getItem('jwt-token');
+
+    let { data } = await axios.get(`${address}/PageMetadataAPI/GetTagGroupTags/${selectedSite.siteName}/${tagGroupId}`, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+
+    dispatch(saveTagGroupTags(tagGroupId, data));
+    successCallback();
+  } catch (e) {
+    console.error(e);
+    dispatch({
+      type: GLOBAL_SET_ERROR,
+      payload: 'Failed fetching tag group tags.'
+    });
+  }
+}
+
+export const updateMetadata = (documentTitle, documentDescription, documentKeywords, documentTagGroupID, documentTags, onSaveCallback) => 
 async (dispatch, getState) => {
   try {
     const { auth, selectedItem } = getState();
@@ -66,34 +90,39 @@ async (dispatch, getState) => {
     const token = await AsyncStorage.getItem('jwt-token');
 
     const headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     };
 
     const body = {
       DocumentID: selectedItem.documentID,
-      DocumentTitle: documentTitle,
+      DocumentTitle:documentTitle,
       DocumentDescription: documentDescription,
       DocumentKeywords: documentKeywords,
-      DocumentTagGroupID: parseInt(documentTagGroupID, 10),
+      DocumentTagGroupID: documentTagGroupID,
       DocumentTags: documentTags
     };
 
-    let { data } = await axios.post(`${address}/PageMetadataAPI/SaveMetadata`, querystring.stringify(body), {
+    let { data } = await axios.post(`${address}/PageMetadataAPI/SaveMetadata`, JSON.stringify(body), {
       headers,
     });
 
     dispatch(savePageMetadata(data));
     dispatch(toggleLoading());
+    onSaveCallback('Successfully saved.', false);
   } catch (e) {
-    console.error(e);
-    dispatch({
-      type: GLOBAL_SET_ERROR,
-      payload: 'Failed approving the page. Try restarting the application.',
-    });
     dispatch(toggleLoading());
+    onSaveCallback(e, true);
   }
 };
+
+const saveTagGroupTags = (tagGroupId, data) => ({
+  type: AUTH_SAVE_TAG_GROUP_TAGS,
+  payload: {
+    tagGroupId,
+    data
+  }
+})
 
 const savePageMetadata = (data) => ({
   type: PAGES_SAVE_METADATA,
@@ -104,3 +133,12 @@ const saveTagGroups = (data) => ({
   type: AUTH_SAVE_TAG_GROUPS,
   payload: data,
 });
+
+export const updateMetadataUI = (pageId, metadata) => {
+  return {
+  type: PAGES_SAVE_METADATA_UI,
+  payload: { 
+    metadata,
+    pageId,
+  }}
+};

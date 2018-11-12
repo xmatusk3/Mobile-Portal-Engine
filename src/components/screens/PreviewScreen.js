@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { WebView, View, Platform, StatusBar, Text } from 'react-native';
+import { WebView, View, Text } from 'react-native';
 import { connect } from 'react-redux';
 import { Button } from 'react-native-elements';
 import _ from 'lodash';
@@ -53,7 +53,6 @@ class PreviewScreen extends Component {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         }}>
         <Text>
           Current workflow step: {page.currentWorkflowStep.workflowStepDisplayName}
@@ -79,10 +78,6 @@ class PreviewScreen extends Component {
         <View
           style={{
             flex: 10,
-            paddingTop:
-              Platform.OS === 'android' && page.documentHasChildren !== undefined
-                ? StatusBar.currentHeight
-                : 0,
           }}>
           <WebView
             style={{ flex: 1 }}

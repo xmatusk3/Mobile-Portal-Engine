@@ -34,7 +34,7 @@ export const loadPages = (parentId = 0) => async (dispatch, getState) => {
     const { address, selectedSite } = getState().auth;
     const token = await AsyncStorage.getItem('jwt-token');
 
-    let {data} = await axios.get(`${address}/PagesAPI/GetPages/${selectedSite.siteName}/${parentId || ''}`, {
+    let {data} = await axios.get(`${address}/NavigationAPI/GetPages/${selectedSite.siteName}/${parentId || ''}`, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: `Bearer ${token}`,

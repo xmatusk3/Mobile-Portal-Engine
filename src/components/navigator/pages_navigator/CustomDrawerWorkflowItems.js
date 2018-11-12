@@ -43,7 +43,7 @@ class CustomDrawerWorkflowItems extends Component {
     const focused = page.documentID === this.props.selectedItem.documentID;
     const color = focused ? activeTintColor : inactiveTintColor;
     const backgroundColor = focused ? activeBackgroundColor : inactiveBackgroundColor;
-    const label = page.documentNamePath.trimLeft('/');
+    const label = page.documentName;
 
     return (
       <View key={page.documentID}>
