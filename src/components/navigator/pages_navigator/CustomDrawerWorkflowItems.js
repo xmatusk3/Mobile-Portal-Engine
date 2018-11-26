@@ -28,9 +28,15 @@ class CustomDrawerWorkflowItems extends Component {
     this.props.fetchWorkflowPages(() => this.setState({ isFetching: false }));
   }
 
+  _onSelectPage = (navigation, page) => {
+    this.props.selectItem(page);
+    
+    navigation.navigate('previewContent');
+  }
+
   _renderItem = (page) => {
     const {
-      navigation: { navigate },
+      navigation,
       activeTintColor,
       inactiveTintColor,
       activeBackgroundColor,
@@ -56,10 +62,7 @@ class CustomDrawerWorkflowItems extends Component {
           }}>
           <View style={[styles.item, itemStyle]}>
             <TouchableOpacity
-              onPress={() => {
-                this.props.selectItem(page);
-                navigate('content');
-              }}
+              onPress={() => this._onSelectPage(navigation, page)}
               delayPressIn={0}>
             <Text style={[styles.label, { color }, labelStyle]}>{label}</Text>
             </TouchableOpacity>

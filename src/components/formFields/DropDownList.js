@@ -14,6 +14,7 @@ const DropDownList = ({
   checkboxTitle,
   checkboxChecked,
   checkboxOnPress,
+  checkboxDisabled
 }) => {
   const { 
     ddlWrapperStyle,
@@ -30,11 +31,11 @@ const DropDownList = ({
         <CheckBox
           title={checkboxTitle} 
           checked={checkboxChecked} 
-          onPress={checkboxOnPress}
+          onPress={checkboxDisabled ? () => {} : checkboxOnPress}
           containerStyle={checkboxContainerStyle}
         />
       }
-      <View style={ddlWrapperStyle}>
+      <View style={[ddlWrapperStyle, disabled && { backgroundColor: '#ededed' }]}>
         <Picker
           selectedValue={selectedValue}
           style={ddlCustomStyle}
@@ -50,6 +51,7 @@ const DropDownList = ({
 
 const styles = {  
   ddlWrapperStyle: {
+    backgroundColor: 'white',
     flex: 1,
     width: '100%',
     borderRadius: 7,

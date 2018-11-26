@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Button } from 'react-native-elements';
 import _ from 'lodash';
 
-import { LoadingScreen } from '.';
+import { LoadingScreen, NoReadPermissionScreen } from '.';
 
 class PreviewScreen extends Component {
   _onApprove = () => this.props.navigation.navigate('approve');
@@ -12,10 +12,10 @@ class PreviewScreen extends Component {
 
   _renderWorkflowButtons = () => {
     const page = this.props.page;
-    if (page.documentHasChildren !== undefined) {
+    if (page.documentHasChildren !== undefined || !page.hasModifyPermission) {
       return null;
     }
-    
+
     return (
       <View style={styles.buttonContainer}>
         {page.previousWorkflowSteps.length !== 0 && (
@@ -41,6 +41,26 @@ class PreviewScreen extends Component {
       </View>
     );
   };
+
+  _renderPermissionMessage = () => {
+    const page = this.props.page;
+    if (page.hasModifyPermission || page.hasModifyPermission === undefined) {
+      return null;
+    }
+    
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <Text>
+          You cannot modify this page.
+        </Text>
+      </View>
+    )
+  }
 
   _renderWorkflowStepName = () => {
     const page = this.props.page;
@@ -72,8 +92,13 @@ class PreviewScreen extends Component {
       ;
     }
 
+    if (page.hasReadPermission === false) {
+      return <NoReadPermissionScreen />
+    }
+
     return (
       <View style={{ flex: 1 }}>
+        {this._renderPermissionMessage()}
         {this._renderWorkflowStepName()}
         <View
           style={{

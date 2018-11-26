@@ -1,22 +1,23 @@
 import React from 'react';
 import { TextInput, View, Text } from 'react-native';         
 import { CheckBox } from 'react-native-elements';  
+import RadioGroup  from 'react-native-radio-buttons-group'
 
-const TextBox = ({
-  label,
-  placeholder,
-  value,
-  onChangeText,
-  labelCustomStyle,
+const RadioButtons = ({
   containerCustomStyle,
-  inputCustomStyle,
+  labelCustomStyle,
+  label,
+  items,
+  selectedIndex,
+  onChange,
   disabled,
   checkboxTitle,
   checkboxChecked,
   checkboxOnPress,
-  checkboxDisabled
+  checkboxDisabled,
+
 }) => {
-  const { checkboxContainerStyle, inputStyle, labelStyle, containerStyle } = styles;
+  const { checkboxContainerStyle, containerStyle, labelStyle } = styles;
 
   return (
     <View style={[containerStyle, containerCustomStyle]}>
@@ -30,14 +31,9 @@ const TextBox = ({
           containerStyle={checkboxContainerStyle}
         />
       }
-      <TextInput
-        underlineColorAndroid="transparent"
-        placeholder={placeholder}
-        autoCorrect={false}
-        style={[inputStyle, disabled && { backgroundColor: '#ededed' }, inputCustomStyle]}
-        value={value}
-        onChangeText={onChangeText}
-        editable={!disabled}
+      <RadioGroup
+        radioButtons={items.map((item, i) => ({ disabled, label: item, selected: i === selectedIndex }))}
+        onPress={data => onChange(data.findIndex(item => item.selected))}
       />
     </View>
   );
@@ -48,22 +44,6 @@ const styles = {
     paddingLeft: 0,
     marginTop: 5,
     fontSize: 18,
-  },
-  inputStyle: {
-    backgroundColor: 'white',
-    width: '100%',
-    marginTop: 5,
-    marginLeft: 3,
-    height: 40,
-    flex: 1,
-    borderRadius: 7,
-    borderWidth: 0.5,
-    borderColor: '#bbb',
-    color: '#000',
-    paddingRight: 5,
-    paddingLeft: 5,
-    fontSize: 18,
-    lineHeight: 23,
   },
   containerStyle: { 
     flex: 1,
@@ -77,4 +57,4 @@ const styles = {
   }
 };
 
-export { TextBox };
+export { RadioButtons };

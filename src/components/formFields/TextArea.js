@@ -14,6 +14,7 @@ const TextArea = ({
   checkboxTitle,
   checkboxChecked,
   checkboxOnPress,
+  checkboxDisabled
 }) => {
   const { checkboxContainerStyle, inputStyle, labelStyle, containerStyle } = styles;
 
@@ -25,7 +26,7 @@ const TextArea = ({
         <CheckBox 
           title={checkboxTitle} 
           checked={checkboxChecked} 
-          onPress={checkboxOnPress}
+          onPress={checkboxDisabled ? () => {} : checkboxOnPress}
           containerStyle={checkboxContainerStyle}
         />
       }
@@ -33,7 +34,7 @@ const TextArea = ({
         underlineColorAndroid="transparent"
         placeholder={placeholder}
         autoCorrect={false}
-        style={[inputStyle, inputCustomStyle]}
+        style={[inputStyle, , disabled && { backgroundColor: '#ededed' }, inputCustomStyle]}
         value={value}
         onChangeText={onChangeText}
         editable={!disabled}
@@ -50,6 +51,7 @@ const styles = {
     fontSize: 18,
   },
   inputStyle: {
+    backgroundColor: 'white',
     textAlignVertical: 'top',
     width: '100%',
     marginTop: 5,

@@ -12,6 +12,7 @@ import {
   ConnectScreen,
   SetSiteScreen,
   WorkflowScreen,
+  GeneralPropertiesScreen,
 } from './src/components/screens';
 import { CustomDrawerComponent } from './src/components/navigator/pages_navigator';
 import store from './src/store';
@@ -39,6 +40,7 @@ export default class App extends React.Component {
         content: TabNavigator(
           {
             preview: { screen: this._previewWithWorkflowNavigator() },
+            general: { screen: GeneralPropertiesScreen },
             metadata: { screen: MetadataScreen },
           },
           {

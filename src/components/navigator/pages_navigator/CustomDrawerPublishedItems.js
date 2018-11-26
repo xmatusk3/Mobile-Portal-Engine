@@ -42,6 +42,12 @@ class CustomDrawerPublishedItems extends Component {
     }, []);
   };
 
+  _onSelectPage = (navigation, page) => {
+    this.props.selectItem(page);
+    
+    navigation.navigate('previewContent');
+  }
+
   _renderDDLToggle = (page, isFocused) => {
     if (!page.documentHasChildren) {
       return null;
@@ -62,7 +68,7 @@ class CustomDrawerPublishedItems extends Component {
 
   _renderItem = (page, level) => {
     const {
-      navigation: { navigate },
+      navigation,
       activeTintColor,
       inactiveTintColor,
       activeBackgroundColor,
@@ -89,10 +95,7 @@ class CustomDrawerPublishedItems extends Component {
           <View style={[styles.item, itemStyle]}>
             {this._renderDDLToggle(page, focused)}
             <TouchableOpacity
-              onPress={() => {
-                this.props.selectItem(page);
-                navigate('DrawerClose');
-              }}
+              onPress={() => this._onSelectPage(navigation, page)}
               delayPressIn={0}>
               <Text style={[styles.label, { color }, labelStyle]}>{label}</Text>
             </TouchableOpacity>

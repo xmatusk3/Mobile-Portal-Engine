@@ -42,7 +42,7 @@ export const approvePage = (nextStepId, comment, navigate) => async (dispatch, g
       headers,
     });
 
-    navigate('preview');
+    navigate('previewContent');
     dispatch(updateWorkflowItem(enrichWorkflowPage(data, domain)));
     dispatch(toggleLoading());
   } catch (e) {
@@ -76,7 +76,7 @@ export const rejectPage = (prevStepId, comment, navigate) => async (dispatch, ge
       headers,
     });
 
-    navigate('preview');
+    navigate('previewContent');
     dispatch(updateWorkflowItem(enrichWorkflowPage(data, domain)));
     dispatch(toggleLoading());
   } catch (e) {

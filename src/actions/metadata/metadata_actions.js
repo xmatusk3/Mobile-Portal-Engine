@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { AsyncStorage } from 'react-native';
-import querystring from 'querystring';
 
 import { 
   GLOBAL_SET_ERROR, 
@@ -13,8 +12,13 @@ import { toggleLoading } from '../global/global_actions';
 
 export const fetchMetadata = () => async (dispatch, getState) => {
   try {
-    const { auth, selectedItem } = getState();
+    const { auth, selectedItem, global } = getState();
     const { address, selectedSite } = auth;
+    
+    if (!global.loading) {
+      dispatch(toggleLoading());
+    }
+
     const token = await AsyncStorage.getItem('jwt-token');
 
     await fetchTagGroups()(dispatch, getState);
@@ -27,6 +31,7 @@ export const fetchMetadata = () => async (dispatch, getState) => {
     });
 
     dispatch(savePageMetadata(data));
+    dispatch(toggleLoading());
   } catch (e) {
     console.error(e);
     dispatch({

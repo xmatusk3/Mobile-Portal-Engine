@@ -6,3 +6,5 @@ export * from './ConnectScreen';
 export * from './SetSiteScreen';
 export * from './WorkflowScreen';
 export * from './MetadataScreen';
+export * from './NoReadPermissionScreen';
+export * from './GeneralPropertiesScreen';

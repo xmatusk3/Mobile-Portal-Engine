@@ -7,22 +7,30 @@ import _ from 'lodash';
 import { Card, CardSection } from '../common';
 import { TextBox, TextArea, DropDownList, MultipleChoice } from '../formFields';
 import { fetchMetadata, updateMetadata, toggleLoading, fetchTags, updateMetadataUI } from '../../actions';
-import { LoadingScreen } from '.';
+import { LoadingScreen, NoReadPermissionScreen } from '.';
 
 class MetadataScreen extends Component {
   state = {
+    tagGroupTags: [],
     serverMessage: '',
     serverMessageIsError: false,
     showTagGroupModal: false,
   };
 
   componentWillMount() {
-    this.props.fetchMetadata();
+    this.props.navigation.addListener('willFocus', this.props.fetchMetadata);
+  }
+
+  componentWillUnmount() {
+    this.props.navigation.removeListener('willFocus', this.props.fetchMetadata);
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.pageId !== nextProps.pageId) {
-      this.props.fetchMetadata();
+    if (nextProps.hasModifyPermission === false) {
+      this.setState({
+        serverMessage: 'You cannot modify this page.',
+        serverMessageIsError: false
+      });
     }
   }
 
@@ -33,8 +41,12 @@ class MetadataScreen extends Component {
       );
   }
 
+  _getSelectedGroupId = () => this.props.selectedTagGroup.fieldValue 
+                                ? this.props.selectedTagGroup.fieldValue.tagGroupID
+                                : Object.values(this.props.tagGroups)[0].tagGroupID
+
   _onSelectTagsPress = () => {
-    this.props.fetchTags(this.props.selectedTagGroup.fieldValue.tagGroupID, 
+    this.props.fetchTags(this._getSelectedGroupId(), 
       () => { 
         this._onCreateModalData();
         this.setState({ showTagGroupModal: true });
@@ -66,25 +78,31 @@ class MetadataScreen extends Component {
 
   _onCreateModalData = () => 
     {
-      if (!this.props.tagGroups || !this.props.tagGroups[this.props.selectedTagGroup.fieldValue.tagGroupID]) {
+      
+      if (!this.props.tagGroups || !this.props.tagGroups[this._getSelectedGroupId()]) {
         return;
       }
 
       const res = _.keyBy(
                     _.mapValues(
-                      this.props.tagGroups[this.props.selectedTagGroup.fieldValue.tagGroupID].tags, 
+                      this.props.tagGroups[this._getSelectedGroupId()].tags, 
                       tag => ({title: tag.tagDisplayName, additionalInfo: ` (${tag.tagCount})`})), 
                     item => item.title
                   );
+
       this.setState({ tagGroupTags: res });
     }
 
   render() {
+    if (this.props.hasReadPermission === false) {
+      return <NoReadPermissionScreen />
+    }
+
     if (this.props.loading) {
       return <LoadingScreen />;
     }
 
-    const { pageIsNotRoot, tagGroups, pageTitle, pageDescription, pageKeywords, selectedTagGroup, pageTags } = this.props;
+    const { pageIsNotRoot, tagGroups, pageTitle, pageDescription, pageKeywords, selectedTagGroup, pageTags, hasModifyPermission } = this.props;
     const { serverMessageIsError, serverMessage } = this.state;
 
     return (
@@ -101,7 +119,7 @@ class MetadataScreen extends Component {
           onRequestClose={() => this.setState({ showTagGroupModal: false })}
           onConfirm={(newTags) => this._onSetNewTags(newTags)}
           items={this.state.tagGroupTags}
-          selectedItems={this.props.pageTags.split(', ')}
+          selectedItems={this.props.pageTags ? this.props.pageTags.split(', ') : []}
         />
         <View style={{ flex: serverMessage ? 9.5 : 10 }}>
           <ScrollView style={styles.containerStyle}>
@@ -114,7 +132,8 @@ class MetadataScreen extends Component {
                   placeholder='Page title'
                   value={pageTitle.fieldValue}
                   onChangeText={text => this.props.updateMetadataUI(this.props.pageId, { documentTitle: { ...pageTitle, fieldValue: text } })}
-                  disabled={pageIsNotRoot && pageTitle.checkboxValue}
+                  disabled={!hasModifyPermission || (pageIsNotRoot && pageTitle.checkboxValue)}
+                  checkboxDisabled={!hasModifyPermission}
                   checkboxTitle= {pageIsNotRoot && 'Inherited'}
                   checkboxChecked={pageTitle.checkboxValue}
                   checkboxOnPress={() => this.props.updateMetadataUI(this.props.pageId, { documentTitle: { ...pageTitle, checkboxValue: !pageTitle.checkboxValue } })}
@@ -125,7 +144,8 @@ class MetadataScreen extends Component {
                   placeholder='Page description'
                   value={pageDescription.fieldValue}
                   onChangeText={text => this.props.updateMetadataUI(this.props.pageId, { documentDescription: { ...pageDescription, fieldValue: text } })}
-                  disabled={pageIsNotRoot && pageDescription.checkboxValue}
+                  disabled={!hasModifyPermission || (pageIsNotRoot && pageTitle.checkboxValue)}
+                  checkboxDisabled={!hasModifyPermission}
                   checkboxTitle={pageIsNotRoot && 'Inherited'}
                   checkboxChecked={pageDescription.checkboxValue}
                   checkboxOnPress={() => this.props.updateMetadataUI(this.props.pageId, { documentDescription: { ...pageDescription, checkboxValue: !pageDescription.checkboxValue } })}
@@ -136,7 +156,8 @@ class MetadataScreen extends Component {
                   placeholder='Cafe, Coffee, ...'
                   value={pageKeywords.fieldValue}
                   onChangeText={text => this.props.updateMetadataUI(this.props.pageId, { documentKeywords: { ...pageKeywords, fieldValue: text } })}
-                  disabled={pageIsNotRoot && pageKeywords.checkboxValue}
+                  disabled={!hasModifyPermission || (pageIsNotRoot && pageTitle.checkboxValue)}
+                  checkboxDisabled={!hasModifyPermission}
                   checkboxTitle={pageIsNotRoot && 'Inherited'}
                   checkboxChecked={pageKeywords.checkboxValue} 
                   checkboxOnPress={() => this.props.updateMetadataUI(this.props.pageId, { documentKeywords: { ...pageKeywords, checkboxValue: !pageKeywords.checkboxValue } })}
@@ -155,7 +176,8 @@ class MetadataScreen extends Component {
                   items={this._createDdlItems()}
                   selectedValue={selectedTagGroup.fieldValue ? selectedTagGroup.fieldValue.tagGroupID : Object.values(this.props.tagGroups)[0].tagGroupID}
                   onValueChange={itemValue => this.props.updateMetadataUI(this.props.pageId, { documentTagGroupID: { checkboxValue: selectedTagGroup.checkboxValue, fieldValue: itemValue } }) }
-                  disabled={pageIsNotRoot && selectedTagGroup.checkboxValue}
+                  disabled={!hasModifyPermission || (pageIsNotRoot && pageTitle.checkboxValue)}
+                  checkboxDisabled={!hasModifyPermission}
                   checkboxTitle={pageIsNotRoot && 'Inherited'}
                   checkboxChecked={selectedTagGroup.checkboxValue} 
                   checkboxOnPress={() => this.props.updateMetadataUI(this.props.pageId, { documentTagGroupID: { checkboxValue: !selectedTagGroup.checkboxValue, fieldValue: selectedTagGroup.tagGroupID } }) } 
@@ -164,14 +186,14 @@ class MetadataScreen extends Component {
                 <TextBox 
                   label='Page tags (separated by comma):'
                   placeholder='dogs, "angry birds", cats'
-                  disabled={pageIsNotRoot && selectedTagGroup.checkboxValue}
+                  disabled={!hasModifyPermission}
                   value={pageTags}
                   onChangeText={text => this.props.updateMetadataUI(this.props.pageId, { documentTags: text })}
                 />
                 <Button
                   title='Select'
                   color='#262524'
-                  disabled={pageIsNotRoot && selectedTagGroup.checkboxValue}
+                  disabled={!hasModifyPermission}
                   buttonStyle={styles.selectButtonStyle}
                   onPress={() => this._onSelectTagsPress()}
                   containerViewStyle={styles.selectButtonContainerStyle}
@@ -181,14 +203,16 @@ class MetadataScreen extends Component {
             }
           </ScrollView>
         </View>
-        <View style={{ flex: 1 }}>
-          <Button
-            title='Save'
-            buttonStyle={styles.saveButtonStyle}
-            onPress={this._onSave}
-            containerViewStyle={styles.saveButtonContainerStyle}
-          />
-        </View>
+        {hasModifyPermission &&
+          <View style={{ flex: 1 }}>
+            <Button
+              title='Save'
+              buttonStyle={styles.saveButtonStyle}
+              onPress={this._onSave}
+              containerViewStyle={styles.saveButtonContainerStyle}
+            />
+          </View>
+        }
       </View>
     );
   }
@@ -242,14 +266,13 @@ const styles = {
   successText: {
     fontSize: 20,
     alignSelf: 'center',
-    color: 'green',
   }
 };
 
 const mapStateToProps = ({ selectedItem, auth, global }) => {
   if (!selectedItem.metadata) return { loading: true }
 
-  const { documentTitle, documentDescription, documentKeywords, documentTags, documentTagGroupID } = selectedItem.metadata;
+  const { documentTitle, documentDescription, documentKeywords, documentTags, documentTagGroupID, hasModifyPermission } = selectedItem.metadata;
   return {
     pageIsNotRoot: !!selectedItem.documentName,
     pageId: selectedItem.documentID,
@@ -259,7 +282,9 @@ const mapStateToProps = ({ selectedItem, auth, global }) => {
     pageTags: documentTags,
     selectedTagGroup: { checkboxValue: documentTagGroupID.checkboxValue, fieldValue: auth.selectedSite.tagGroups[documentTagGroupID.fieldValue] },
     tagGroups: auth.selectedSite.tagGroups,
-    loading: global.loading
+    hasReadPermission: selectedItem.hasReadPermission,
+    hasModifyPermission,
+    loading: global.loading,
   };
 };
 

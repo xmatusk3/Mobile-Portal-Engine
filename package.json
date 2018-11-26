@@ -20,12 +20,14 @@
     "react": "16.2.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz",
     "react-native-elements": "^0.19.1",
+    "react-native-radio-buttons-group": "^1.0.7",
     "react-navigation": "^1.5.1",
     "react-redux": "^5.0.7",
     "redux": "^3.7.2",
     "redux-promise": "^0.5.3",
     "redux-thunk": "^2.2.0",
-    "utf8": "^3.0.0"
+    "utf8": "^3.0.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "eslint": "^4.19.0",
