@@ -6,17 +6,9 @@ import _ from 'lodash';
 
 import { Card, CardSection } from '../common';
 import { TextBox, TextArea, DropDownList, MultipleChoice } from '../formFields';
-import { fetchGeneralProperties, updateGeneralPropertiesUI } from '../../actions';
+import { fetchGeneralProperties } from '../../actions';
 import { LoadingScreen, NoReadPermissionScreen } from '.';
 import utils from '../../utils/utils';
-
-const propertiesSectionIdentifiers = {
-  DESIGN: 'designGeneralProperties',
-  OTHER: 'otherGeneralProperties',
-  OWNER: 'ownerGeneralProperties',
-  OUTPUT_CACHE: 'outputCacheGeneralProperties',
-  ONLINE_MARKETING: 'onlineMarketingGeneralProperties'
-}
 
 class GeneralPropertiesScreen extends Component {
   state = {
@@ -39,33 +31,155 @@ class GeneralPropertiesScreen extends Component {
         serverMessageIsError: false
       });
     }
+    if (nextProps.properties) {
+      Object.values(nextProps.properties)
+        .map(propSection => Object.keys(propSection)
+          .map(propKey => this._setStateForProp(propSection[propKey], propKey)));
+    }
+  }
+
+  _setStateForProp = (property, key) => {
+    let value = property;
+    let stateValue;
+    let inheritValue;
+
+    while (value) {
+      if (value.fieldSelectedValueID) {
+        stateValue = value.fieldSelectedValueID;    
+      }
+
+      if (value.checkboxValue !== undefined) {
+        inheritValue = value.checkboxValue;
+      }
+
+      if (value.id !== undefined) {
+        stateValue = value.fieldValue;
+      }
+
+      if (value.selectedIndex !== undefined) {
+        stateValue = value.selectedIndex;
+      }
+
+      if (value.fieldValue === undefined) {
+        break;
+      }
+
+      value = value.fieldValue;
+    }
+
+    stateValue = stateValue !== undefined ? stateValue : value;
+    // Check for date value
+    if (typeof(stateValue) === "string") {
+      stateValue = isNaN(new Date(stateValue)) ? stateValue : new Date(stateValue);
+    }
+
+    if (inheritValue !== undefined) {
+      this.setState({ [key]: stateValue, [`${key}Inherit`]: inheritValue });
+    } else {
+      this.setState({ [key]: stateValue });
+    }
+  }
+
+  _createResetRatingButton = (ratingField) => {
+    return (
+      <View key={'rating'}>
+        {ratingField}
+        <Button
+          title='Reset rating'
+          color='#262524'
+          disabled={!this.props.hasModifyPermission}
+          buttonStyle={styles.buttonStyle}
+          onPress={() => console.log('..press..')}
+          containerViewStyle={[styles.buttonContainerStyle, { width: 120 }]}
+        />
+      </View>
+    )
+  }
+
+  _createClearOutputCacheButton = (cacheMinutesField) => {
+    return (
+      <View key={'outputCache'}>
+        {cacheMinutesField}
+        <Button
+          title='Clear output cache'
+          color='#262524'
+          disabled={!this.props.hasModifyPermission}
+          buttonStyle={styles.buttonStyle}
+          onPress={() => console.log('..pressCache..')}
+          containerViewStyle={[styles.buttonContainerStyle, { width: 160 }]}
+        />
+      </View>
+    );
+  }
+
+  _createOwnerButtons = (ownerField) => {
+    return (
+      <View key={'owner'}>
+        {ownerField}
+        <View style={styles.ownerButtonContainer}>
+          <Button
+            title='Select'
+            color='#262524'
+            disabled={!this.props.hasModifyPermission}
+            buttonStyle={styles.buttonStyle}
+            onPress={() => console.log('..pressSelectOwner..')}
+            containerViewStyle={styles.buttonContainerStyle}
+          />
+          <Button
+            title='Clear'
+            color='#262524'
+            disabled={!this.props.hasModifyPermission}
+            buttonStyle={styles.buttonStyle}
+            onPress={() => console.log('..pressClearOwner..')}
+            containerViewStyle={styles.buttonContainerStyle}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  _createOwnedByGroupButton = (ownedByGroupField) => {
+    return (
+      <View key={'ownedByGroup'}>
+        {ownedByGroupField}
+        <Button
+          title='Change'
+          color='#262524'
+          disabled={!this.props.hasModifyPermission}
+          buttonStyle={styles.buttonStyle}
+          onPress={() => console.log('..pressChangeOwnedByGroup..')}
+          containerViewStyle={styles.buttonContainerStyle}
+        />
+      </View>
+    );
   }
 
   _renderDesignSection = () => {
-    const { designGeneralProperties, updateGeneralPropertiesUI, hasModifyPermission, pageIsNotRoot } = this.props;
+    const { properties: { designGeneralProperties }, hasModifyPermission, pageIsNotRoot } = this.props;
 
     return Object.keys(designGeneralProperties)
-      .map(key => {
+      .map((key, index) => {
         const object = designGeneralProperties[key];
 
-        return utils.generateFormField(
-          object, 
-          (value) => updateGeneralPropertiesUI({ [key]: {...object, fieldSelectedValueID: value} }, propertiesSectionIdentifiers.DESIGN),
-          () => updateGeneralPropertiesUI(
-            { [key]: { ...object, fieldValue: { ...object.fieldValue, checkboxValue: !object.fieldValue.checkboxValue} }},
-             propertiesSectionIdentifiers.DESIGN),
-          !pageIsNotRoot,
-          !hasModifyPermission || object.fieldValue.checkboxValue,
-          !hasModifyPermission
-        );
+        return utils.generateFormField({
+          fieldObject: object, 
+          value: this.state[key],
+          onChange: (value) => this.setState({ [key]: value }),
+          disabled: !hasModifyPermission || this.state[`${key}Inherit`],
+          isRoot: !pageIsNotRoot,
+          checkboxValue: this.state[`${key}Inherit`],
+          onCheckboxChange: () => this.setState({ [`${key}Inherit`]: !this.state[`${key}Inherit`]}),
+          checkboxDisabled: !hasModifyPermission,
+          index
+        });
       });
   }
 
   _renderOtherSection = () => {
-    const { otherGeneralProperties, pageIsNotRoot } = this.props;
+    const { properties: { otherGeneralProperties }, pageIsNotRoot } = this.props;
 
     return Object.keys(otherGeneralProperties)
-      .map(key => {
+      .map((key, index) => {
         let object = otherGeneralProperties[key];
 
         if (!pageIsNotRoot && object.fieldValue === null) {
@@ -76,68 +190,76 @@ class GeneralPropertiesScreen extends Component {
           object = { ...object, fieldValue: '(root)' };
         }
 
-        return utils.generateFormField(object);
+        if (key === 'rating') {
+          return this._createResetRatingButton(utils.generateFormField({ fieldObject: object, value: this.state[key], index }));
+        }
+
+        return utils.generateFormField({ fieldObject: object, value: this.state[key], index });
       });
   }
 
   _renderOwnerSection = () => {
-    const { ownerGeneralProperties } = this.props;
-    // TODO: |remove later| field, fieldName, onChange, onCheckboxChange, isRoot, disabled, checkboxDisabled
+    const { properties: { ownerGeneralProperties } } = this.props;
+
     return Object.keys(ownerGeneralProperties)
-      .map(key => {
+      .map((key, index) => {
         const object = ownerGeneralProperties[key];
 
-        return utils.generateFormField(object);
-      })
+        if (key === 'owner') {
+          return this._createOwnerButtons(utils.generateFormField({ fieldObject: object, value: this.state[key], index }));
+        }
+        else {
+          return this._createOwnedByGroupButton(utils.generateFormField({ fieldObject: object, value: this.state[key], index }));
+        }
+      });
   }
 
   _renderOutputCacheSection = () => {
-    const { outputCacheGeneralProperties, updateGeneralPropertiesUI, hasModifyPermission } = this.props;
+    const { properties: { outputCacheGeneralProperties }, hasModifyPermission } = this.props;
 
     return Object.keys(outputCacheGeneralProperties)
-      .map(key => {
+      .map((key, index) => {
         const object = outputCacheGeneralProperties[key];
-        let disabled = !hasModifyPermission;
-        let onChange = (index) => updateGeneralPropertiesUI(
-          { [key]: {...object, fieldValue: { ...object.fieldValue, selectedIndex: index} }},
-          propertiesSectionIdentifiers.OUTPUT_CACHE);
 
         if (key === 'cacheMinutes') {
-          disabled = !hasModifyPermission || outputCacheGeneralProperties.useOutputCache.fieldValue.selectedIndex !== 0;
-          onChange = (value) => updateGeneralPropertiesUI(
-            { [key]: {...object, fieldValue: value} },
-            propertiesSectionIdentifiers.OUTPUT_CACHE);
+          return this._createClearOutputCacheButton(utils.generateFormField({
+            fieldObject: object,
+            value: this.state[key],
+            onChange: (value) => this.setState({ [key]: value }),
+            disabled: !hasModifyPermission || this.state.useOutputCache !== 0,
+            index
+          }));
         }
 
-        return utils.generateFormField(
-          object,
-          onChange,
-          () => {},
-          null,  
-          disabled
-        );
+        return utils.generateFormField({
+          fieldObject: object,
+          value: this.state[key],
+          onChange: (value) => this.setState({ [key]: value }),
+          disabled: !hasModifyPermission,
+          index
+        });
       })
   }
 
+  
   _renderOnlineMarketingSection = () => {
-    const { onlineMarketingGeneralProperties, updateGeneralPropertiesUI, hasModifyPermission, pageIsNotRoot } = this.props;
+    const { properties: { onlineMarketingGeneralProperties }, hasModifyPermission, pageIsNotRoot } = this.props;
 
     return Object.keys(onlineMarketingGeneralProperties)
-      .map(key => {
+      .map((key, index) => {
         const object = onlineMarketingGeneralProperties[key];
 
-        return utils.generateFormField(
-          object, 
-          () => updateGeneralPropertiesUI(
-            { [key]: {...object, fieldValue: { ...object.fieldValue, fieldValue: !object.fieldValue.fieldValue} }},
-            propertiesSectionIdentifiers.ONLINE_MARKETING),
-          () => updateGeneralPropertiesUI(
-            { [key]: { ...object, fieldValue: { ...object.fieldValue, checkboxValue: !object.fieldValue.checkboxValue} }},
-            propertiesSectionIdentifiers.ONLINE_MARKETING),
-          !pageIsNotRoot,
-          !hasModifyPermission || object.fieldValue.checkboxValue,
-          !hasModifyPermission
-        );
+        return utils.generateFormField({
+          fieldObject: object,
+          value: this.state[key],
+          onChange: () => this.setState({ [key]: !this.state[key] }),
+          disabled: !hasModifyPermission || this.state[`${key}Inherit`],
+          isRoot: !pageIsNotRoot,
+          checkboxValue: this.state[`${key}Inherit`],
+          onCheckboxChange: () => this.setState({ [`${key}Inherit`]: !this.state[`${key}Inherit`] }),
+          checkboxDisabled: !hasModifyPermission,
+          index
+        });
       })
   }
 
@@ -205,16 +327,19 @@ class GeneralPropertiesScreen extends Component {
 }
 
 const styles = {
-  selectButtonStyle: {
+  ownerButtonContainer: {
+    flexDirection: 'row',
+  },
+  buttonStyle: {
     backgroundColor: '#bdbbbb',
     flex: 1,
     borderWidth: 1,
+    marginLeft: 5
   },
-  selectButtonContainerStyle: {
+  buttonContainerStyle: {
     width: 80,
     height: 35,
     marginLeft: 0,
-    flex: 1,
   },
   saveButtonStyle: {
     backgroundColor: '#497d04', 
@@ -269,11 +394,13 @@ const mapStateToProps = ({ selectedItem, global }) => {
   } = selectedItem.generalProperties;
 
   return {
-    designGeneralProperties, 
-    otherGeneralProperties, 
-    onlineMarketingGeneralProperties, 
-    ownerGeneralProperties, 
-    outputCacheGeneralProperties, 
+    properties: {
+      designGeneralProperties, 
+      otherGeneralProperties, 
+      onlineMarketingGeneralProperties, 
+      ownerGeneralProperties, 
+      outputCacheGeneralProperties,
+    }, 
     hasModifyPermission, 
     hasReadPermission,
     loading: global.loading,
@@ -281,6 +408,6 @@ const mapStateToProps = ({ selectedItem, global }) => {
   };
 };
 
-const connectedComponent = connect(mapStateToProps, { fetchGeneralProperties, updateGeneralPropertiesUI })(GeneralPropertiesScreen);
+const connectedComponent = connect(mapStateToProps, { fetchGeneralProperties })(GeneralPropertiesScreen);
 
 export { connectedComponent as GeneralPropertiesScreen };

@@ -6,7 +6,7 @@ import {
   PAGES_SAVE_METADATA, 
   PAGES_SAVE_METADATA_UI,
   PAGES_SAVE_GENERAL_PROPERTIES,
-  PAGES_UPDATE_GENERAL_PROPERTIES_UI
+  PAGES_UPDATE_GENERAL_PROPERTIES
 } from '../../actions/types';
 
 const INIT_STATE = {};
@@ -42,7 +42,7 @@ export default (state = INIT_STATE, { type, payload }) => {
           ...payload
         }
       }
-    case PAGES_UPDATE_GENERAL_PROPERTIES_UI:
+    case PAGES_UPDATE_GENERAL_PROPERTIES:
       return {
         ...state,
         generalProperties: {

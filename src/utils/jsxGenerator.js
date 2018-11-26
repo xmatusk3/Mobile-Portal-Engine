@@ -11,86 +11,86 @@ import {
 } from '../components/formFields';
 
 export const jsxGenerator = {
-  generateLabelText: (field) => {
+  generateLabelText: ({ fieldObject, value, index }) => {
     return (
       <LabelText
-        key={`${field.fieldDisplayName}${uuid()}`}
-        label={`${field.fieldDisplayName}:`}
-        value={`${field.fieldValue}`}
+        key={index}
+        label={`${fieldObject.fieldDisplayName}:`}
+        value={`${value}`}
       />
     );
   },
 
-  generateCheckbox: (field, onChange, onCheckboxChange, isRoot, disabled, checkboxDisabled) => {
+  generateCheckbox: ({ fieldObject, value, onChange, disabled,  isRoot, checkboxValue, onCheckboxChange, checkboxDisabled, index }) => {
     return (
       <Checkbox
-        key={`${field.fieldDisplayName}${uuid()}`}
-        checkboxTitle={field.fieldDisplayName}
-        checkboxChecked={getFieldValue(field)}
+        key={index}
+        checkboxTitle={fieldObject.fieldDisplayName}
+        checkboxChecked={value}
         checkboxOnPress={onChange}
-        checkboxDisabled={field.fieldIsReadOnly || disabled}
-        extraCheckboxTitle={field.fieldValue.checkboxValue !== undefined && !isRoot && 'Inherited'}
-        extraCheckboxChecked={field.fieldValue.checkboxValue}
+        checkboxDisabled={fieldObject.fieldIsReadOnly || disabled}
+        extraCheckboxTitle={fieldObject.fieldValue.checkboxValue !== undefined && !isRoot && 'Inherited'}
+        extraCheckboxChecked={checkboxValue}
         extraCheckboxOnPress={onCheckboxChange}
         extraCheckboxDisabled={checkboxDisabled}
       />
     );
   },
 
-  generateTextbox: (field, onChange, onCheckboxChange, isRoot, disabled, checkboxDisabled) => {
+  generateTextbox: ({ fieldObject, value, onChange, disabled,  isRoot, checkboxValue, onCheckboxChange, checkboxDisabled, index }) => {
     return (
       <TextBox
-        key={`${field.fieldDisplayName}${uuid()}`}
-        label={`${field.fieldDisplayName}:`}
-        value={`${getFieldValue(field)}`}
+        key={index}
+        label={`${fieldObject.fieldDisplayName}:`}
+        value={`${value}`}
         onChangeText={text => onChange(text)}
-        disabled={field.fieldIsReadOnly || disabled}
-        checkboxDisabled={field.fieldIsReadOnly || checkboxDisabled}
-        checkboxTitle= {field.fieldValue.checkboxValue !== undefined && !isRoot && 'Inherited'}
-        checkboxChecked={field.fieldValue.checkboxValue}
+        disabled={fieldObject.fieldIsReadOnly || disabled}
+        checkboxDisabled={fieldObject.fieldIsReadOnly || checkboxDisabled}
+        checkboxTitle= {fieldObject.fieldValue.checkboxValue !== undefined && !isRoot && 'Inherited'}
+        checkboxChecked={checkboxValue}
         checkboxOnPress={onCheckboxChange}
       />
     )
   },
 
-  generateDropdown: (field, onChange, onCheckboxChange, isRoot, disabled, checkboxDisabled) => {
+  generateDropdown: ({ fieldObject, value, onChange, disabled,  isRoot, checkboxValue, onCheckboxChange, checkboxDisabled, index }) => {
     const items = 
-      (field.fieldValue.fieldValue || field.fieldValue)
+      (fieldObject.fieldValue.fieldValue || fieldObject.fieldValue)
         .map(item => 
           <Picker.Item key={item.id} label={item.fieldValue} value={item.id} />
         );
     
     return (
       <DropDownList
-        key={`${field.fieldDisplayName}${uuid()}`}
-        label={`${field.fieldDisplayName}:`}
+        key={index}
+        label={`${fieldObject.fieldDisplayName}:`}
         items={items}
-        selectedValue={field.fieldSelectedValueID}
+        selectedValue={value}
         onValueChange={itemValue => onChange(itemValue) }
-        disabled={field.fieldIsReadOnly || disabled}
-        checkboxDisabled={field.fieldIsReadOnly || checkboxDisabled}
-        checkboxTitle={field.fieldValue.checkboxValue !== undefined && !isRoot && 'Inherited'}
-        checkboxChecked={field.fieldValue.checkboxValue} 
+        disabled={fieldObject.fieldIsReadOnly || disabled}
+        checkboxDisabled={fieldObject.fieldIsReadOnly || checkboxDisabled}
+        checkboxTitle={fieldObject.fieldValue.checkboxValue !== undefined && !isRoot && 'Inherited'}
+        checkboxChecked={checkboxValue} 
         checkboxOnPress={onCheckboxChange} 
       />
     );
   },
 
-  generateListing: (field) => {},
+  generateListing: ({ fieldObject }) => {},
 
-  generateRadioButton: (field, onChange, onCheckboxChange, isRoot, disabled, checkboxDisabled) => {
+  generateRadioButton: ({ fieldObject, value, onChange, disabled,  isRoot, checkboxValue, onCheckboxChange, checkboxDisabled, index }) => {
     return (
       <RadioButtons
-        key={`${field.fieldDisplayName}${uuid()}`}
-        label={`${field.fieldDisplayName}:`}
-        items={getFieldValue(field).options}
-        selectedIndex={getFieldValue(field).selectedIndex}
+        key={index}
+        label={`${fieldObject.fieldDisplayName}:`}
+        items={getFieldValue(fieldObject).options}
+        selectedIndex={value}
         onChange={onChange}
-        disalbed={field.fieldIsReadOnly || disabled}
-        checkboxTitle={field.fieldValue.checkboxValue !== undefined && !isRoot && 'Inherited'}
-        checkboxChecked={field.fieldValue.checkboxValue}
+        disalbed={fieldObject.fieldIsReadOnly || disabled}
+        checkboxTitle={fieldObject.fieldValue.checkboxValue !== undefined && !isRoot && 'Inherited'}
+        checkboxChecked={checkboxValue}
         checkboxOnPress={onCheckboxChange}
-        checkboxDisabled={field.fieldIsReadOnly || checkboxDisabled}
+        checkboxDisabled={fieldObject.fieldIsReadOnly || checkboxDisabled}
       />
     )
   },

@@ -4,7 +4,7 @@ import { AsyncStorage } from 'react-native';
 import { 
   GLOBAL_SET_ERROR, 
   PAGES_SAVE_GENERAL_PROPERTIES,
-  PAGES_UPDATE_GENERAL_PROPERTIES_UI
+  PAGES_UPDATE_GENERAL_PROPERTIES
 } from "../types";
 import { toggleLoading } from '..';
 
@@ -42,8 +42,8 @@ const savePageGeneralProperties = (data) => ({
   payload: data,
 });
 
-export const updateGeneralPropertiesUI = (data, propertiesSectionIdentifier) => ({
-  type: PAGES_UPDATE_GENERAL_PROPERTIES_UI,
+export const updateGeneralProperties = (data, propertiesSectionIdentifier) => ({
+  type: PAGES_UPDATE_GENERAL_PROPERTIES,
   payload: {
     data,
     propertiesSectionIdentifier

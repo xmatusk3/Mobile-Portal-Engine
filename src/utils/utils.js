@@ -18,23 +18,32 @@ export default utils = {
     return ensuredUrl;
   },
 
-  // TODO: |remove later| field, fieldName, onChange, onCheckboxChange, isRoot, disabled, checkboxDisabled
-  generateFormField: (fieldObject, onChange = () => {}, onCheckboxChange = () => {}, isRoot = true, disabled = false, checkboxDisabled = false) => {
-    switch (fieldObject.fieldType) {
+  generateFormField: (args = { 
+    fieldObject, 
+    value, 
+    onChange: () => {}, 
+    disabled: false, 
+    isRoot: true, 
+    checkboxValue: false, 
+    onCheckboxChange: () => {}, 
+    checkboxDisabled: false,
+    index
+  }) => {
+    switch (args.fieldObject.fieldType) {
       case fieldTypeEnum.LABEL_TEXT_FIELD:
-        return jsxGenerator.generateLabelText(fieldObject);
+        return jsxGenerator.generateLabelText(args);
       case fieldTypeEnum.CHECKBOX_FIELD:
-        return jsxGenerator.generateCheckbox(fieldObject, onChange, onCheckboxChange, isRoot, disabled, checkboxDisabled);
+        return jsxGenerator.generateCheckbox(args);
       case fieldTypeEnum.TEXTBOX_FIELD:
-        return jsxGenerator.generateTextbox(fieldObject, onChange, onCheckboxChange, isRoot, disabled, checkboxDisabled);
+        return jsxGenerator.generateTextbox(args);
       case fieldTypeEnum.DROPDOWN_FIELD:
-        return jsxGenerator.generateDropdown(fieldObject, onChange, onCheckboxChange, isRoot, disabled, checkboxDisabled);
+        return jsxGenerator.generateDropdown(args);
       case fieldTypeEnum.SINGLE_CHOICE_FIELD:
-        return jsxGenerator.generateListing(fieldObject);
+        return jsxGenerator.generateListing(args);
       case fieldTypeEnum.RADIO_BUTTON_FIELD:
-        return jsxGenerator.generateRadioButton(fieldObject, onChange, onCheckboxChange, isRoot, disabled, checkboxDisabled);
+        return jsxGenerator.generateRadioButton(args);
       case fieldTypeEnum.TEXTAREA_FIELD:
-        return jsxGenerator.generateTextarea(fieldObject);
+        return jsxGenerator.generateTextarea(args);
       default:
         return jsxGenerator.generateNotSupportedField()
     }
